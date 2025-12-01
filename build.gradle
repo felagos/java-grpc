@@ -34,8 +34,6 @@ dependencies {
 	implementation "io.grpc:grpc-protobuf:${grpcVersion}"
 	implementation "io.grpc:grpc-stub:${grpcVersion}"
 
-	compileOnly "org.apache.tomcat:annotations-api:${tomcatAnnotationsVersion}"
-
 	implementation 'ch.qos.logback:logback-classic'
 
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"

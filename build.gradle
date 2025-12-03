@@ -24,6 +24,7 @@ ext {
 	protocVersion = '3.25.5'
 	jacksonVersion = '2.18.1'
 	tomcatAnnotationsVersion = '6.0.53'
+	pgvVersion = '1.0.4'
 }
 
 dependencies {
@@ -33,6 +34,8 @@ dependencies {
 	implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 	implementation "io.grpc:grpc-protobuf:${grpcVersion}"
 	implementation "io.grpc:grpc-stub:${grpcVersion}"
+
+	implementation "build.buf.protoc-gen-validate:pgv-java-stub:${pgvVersion}"
 
 	implementation 'ch.qos.logback:logback-classic'
 
@@ -47,10 +50,16 @@ protobuf {
 		grpc {
 			artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
 		}
+		javapgv {
+			artifact = "build.buf.protoc-gen-validate:protoc-gen-validate:${pgvVersion}"
+		}
 	}
 	generateProtoTasks {
 		all()*.plugins {
 			grpc {}
+			javapgv {
+				option "lang=java"
+			}
 		}
 	}
 }

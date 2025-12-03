@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option java_package = "com.grpc.models";
+option java_outer_classname = "MetadataModel";
+option java_multiple_files = true;
+
+message Metadata {
+    map<string, string> attributes = 1;
+    string created_by = 2;
+    int64 timestamp = 3;
+}

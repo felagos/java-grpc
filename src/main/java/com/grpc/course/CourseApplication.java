@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.grpc.models.Person;
+import com.grpc.models.Student;
 
 @SpringBootApplication
 public class CourseApplication {

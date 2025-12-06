@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package proto_files;
+
 option java_package = "com.grpc.models";
 option java_outer_classname = "AddressModel";
 option java_multiple_files = true;

@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package proto_files;
+
 option java_package = "com.grpc.models";
 option java_outer_classname = "MetadataModel";
 option java_multiple_files = true;

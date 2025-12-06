@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "person.proto";
 
-package proto_files;
+package proto.common;
 
 option java_package = "com.grpc.models";
 option java_outer_classname = "StudentModel";

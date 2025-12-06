@@ -4,7 +4,7 @@ import "address.proto";
 import "metadata.proto";
 import "validate/validate.proto";
 
-package proto_files;
+package proto.common;
 
 option java_package = "com.grpc.models";
 option java_outer_classname = "PersonModel";

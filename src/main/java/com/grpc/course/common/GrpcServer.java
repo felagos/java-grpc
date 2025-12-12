@@ -4,6 +4,9 @@ import com.grpc.course.services.BankService;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,27 +14,62 @@ public class GrpcServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcServer.class);
     private static Server server;
+    private static Thread serverThread;
 
-    public static void initServer(int port) throws Exception {
+    public static void initServer(int port) {
         if (server != null && !server.isShutdown()) {
             logger.warn("gRPC server is already running, shutting down first...");
-            server.shutdown();
+            shutdown();
         }
         
-        server = ServerBuilder.forPort(port)
-                .addService(new BankService())
-                .build()
-                .start();
-        
-        logger.info("gRPC server is up and running on port {}", port);
-        
-        server.awaitTermination();
+        try {
+            server = ServerBuilder.forPort(port)
+                    .addService(new BankService())
+                    .build()
+                    .start();
+            
+            logger.info("gRPC server is up and running on port {}", port);
+
+            Runnable runnableServer = () -> {
+                try {
+                    server.awaitTermination();
+                } catch (InterruptedException e) {
+                    logger.info("gRPC server thread interrupted");
+                    Thread.currentThread().interrupt();
+                }
+            };
+            
+            serverThread = new Thread(runnableServer);
+
+            serverThread.setDaemon(true);
+            serverThread.setName("grpc-server-thread");
+            serverThread.start();
+            
+        } catch (Exception e) {
+            logger.error("Failed to start gRPC server", e);
+            throw new RuntimeException("Failed to start gRPC server", e);
+        }
     }
 
     public static void shutdown() {
         if (server != null && !server.isShutdown()) {
             logger.info("Shutting down gRPC server...");
             server.shutdown();
+
+            try {
+                if (!server.awaitTermination(5, TimeUnit.SECONDS)) {
+                    logger.warn("gRPC server did not terminate gracefully, forcing shutdown...");
+                    server.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                logger.warn("Interrupted while waiting for gRPC server shutdown");
+                server.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+        
+        if (serverThread != null && serverThread.isAlive()) {
+            serverThread.interrupt();
         }
     }
 

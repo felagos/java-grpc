@@ -36,6 +36,8 @@ dependencies {
 	implementation "io.grpc:grpc-stub:${grpcVersion}"
 
 	implementation "build.buf.protoc-gen-validate:pgv-java-stub:${pgvVersion}"
+	
+	implementation 'javax.annotation:javax.annotation-api:1.3.2'
 
 	implementation 'ch.qos.logback:logback-classic'
 
@@ -70,4 +72,8 @@ sourceSets {
 			srcDir 'src/main/proto'
 		}
 	}
+}
+
+processResources {
+	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

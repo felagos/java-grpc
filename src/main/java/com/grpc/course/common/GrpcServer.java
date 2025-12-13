@@ -1,10 +1,10 @@
 package com.grpc.course.common;
 
-import com.grpc.course.services.BankService;
-
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -15,29 +15,33 @@ import org.springframework.stereotype.Component;
 public class GrpcServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcServer.class);
-    
+
     private Server server;
     private Thread serverThread;
 
-    private final BankService bankService;
+    private final List<BindableService> services;
 
-    public GrpcServer(BankService bankService) {
-        this.bankService = bankService;
+    public GrpcServer(List<BindableService> services) {
+        this.services = services;
+        logger.info("{} gRPC service(s) found and will be registered", services.size());
     }
-    
 
     public void initServer(int port) {
         if (server != null && !server.isShutdown()) {
             logger.warn("gRPC server is already running, shutting down first...");
             shutdown();
         }
-        
+
         try {
-            server = ServerBuilder.forPort(port)
-                    .addService(bankService)
-                    .build()
-                    .start();
-            
+            var serverBuilder = ServerBuilder.forPort(port);
+
+            services.forEach(service -> {
+                serverBuilder.addService(service);
+                logger.info("Registered gRPC service: {}", service.getClass().getSimpleName());
+            });
+
+            server = serverBuilder.build().start();
+
             logger.info("gRPC server is up and running on port {}", port);
 
             Runnable runnableServer = () -> {
@@ -48,13 +52,13 @@ public class GrpcServer {
                     Thread.currentThread().interrupt();
                 }
             };
-            
+
             serverThread = new Thread(runnableServer);
 
             serverThread.setDaemon(true);
             serverThread.setName("grpc-server-thread");
             serverThread.start();
-            
+
         } catch (Exception e) {
             logger.error("Failed to start gRPC server", e);
             throw new RuntimeException("Failed to start gRPC server", e);
@@ -77,7 +81,7 @@ public class GrpcServer {
                 Thread.currentThread().interrupt();
             }
         }
-        
+
         if (serverThread != null && serverThread.isAlive()) {
             serverThread.interrupt();
         }

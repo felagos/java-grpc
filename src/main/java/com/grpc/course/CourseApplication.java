@@ -13,8 +13,14 @@ import jakarta.annotation.PreDestroy;
 @SpringBootApplication
 public class CourseApplication {
 
+	private final GrpcServer grpcServer;
+
 	@Value("${grpc.server.port}")
 	private int grpcPort;
+
+	public CourseApplication(GrpcServer grpcServer) {
+		this.grpcServer = grpcServer;
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(CourseApplication.class, args);
@@ -23,12 +29,12 @@ public class CourseApplication {
 	@Bean
 	public CommandLineRunner run() {
 		return args -> {
-			GrpcServer.initServer(grpcPort);
+			grpcServer.initServer(grpcPort);
 		};
 	}
 
 	@PreDestroy
 	public void onShutdown() {
-		GrpcServer.shutdown();
+		grpcServer.shutdown();
 	}
 }

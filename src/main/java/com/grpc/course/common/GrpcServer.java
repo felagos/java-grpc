@@ -9,14 +9,24 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class GrpcServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcServer.class);
-    private static Server server;
-    private static Thread serverThread;
+    
+    private Server server;
+    private Thread serverThread;
 
-    public static void initServer(int port) {
+    private final BankService bankService;
+
+    public GrpcServer(BankService bankService) {
+        this.bankService = bankService;
+    }
+    
+
+    public void initServer(int port) {
         if (server != null && !server.isShutdown()) {
             logger.warn("gRPC server is already running, shutting down first...");
             shutdown();
@@ -24,7 +34,7 @@ public class GrpcServer {
         
         try {
             server = ServerBuilder.forPort(port)
-                    .addService(new BankService())
+                    .addService(bankService)
                     .build()
                     .start();
             
@@ -51,7 +61,7 @@ public class GrpcServer {
         }
     }
 
-    public static void shutdown() {
+    public void shutdown() {
         if (server != null && !server.isShutdown()) {
             logger.info("Shutting down gRPC server...");
             server.shutdown();

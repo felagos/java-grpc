@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package proto.common;
 
+import "google/protobuf/empty.proto";
+
 option java_package = "com.grpc.course";
 option java_multiple_files = true;
 
@@ -14,6 +16,11 @@ message AccountBalance {
     int32 account_number = 2;
 }
 
+message AllAccountsResponse {
+    repeated AccountBalance accounts = 1;
+}
+
 service BankService {
     rpc GetAccountBalance (BalanceCheckRequest) returns (AccountBalance);
+    rpc GetAllAccounts (google.protobuf.Empty) returns (AllAccountsResponse);
 }

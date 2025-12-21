@@ -1,5 +1,6 @@
 package com.grpc.course.repository;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,10 @@ public class AccountRepository {
 
     public Integer getBalance(int accountNumber) {
         return accountData.getOrDefault(accountNumber, 0);
+    }
+
+    public Map<Integer, Integer> getAllAccounts() {
+        return Collections.unmodifiableMap(accountData);
     }
 
 }

@@ -3,15 +3,14 @@ package com.grpc.course.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
 import com.google.protobuf.Empty;
 import com.grpc.course.AccountBalance;
 import com.grpc.course.AllAccountsResponse;
 import com.grpc.course.BalanceCheckRequest;
 import com.grpc.course.BankServiceGrpc;
 import com.grpc.course.repository.AccountRepository;
-
 import io.grpc.stub.StreamObserver;
+
 @Service
 public class BankService extends BankServiceGrpc.BankServiceImplBase {
 
@@ -52,7 +51,7 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
                     .build();
 
             responseBuilder.addAccounts(accountBalance);
-            
+
             logger.info("Adding account number: {} with balance: {}", accountNumber, balance);
         });
 

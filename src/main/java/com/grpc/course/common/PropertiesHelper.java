@@ -27,10 +27,10 @@ public class PropertiesHelper {
                 return config;
             }
             properties.load(input);
-            
-            for (String key : properties.stringPropertyNames()) {
+
+            properties.stringPropertyNames().forEach(key -> {
                 config.put(key, properties.getProperty(key));
-            }
+            });
             
             return config;
         } catch (IOException e) {

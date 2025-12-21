@@ -31,9 +31,6 @@ public class CourseApplication {
 	public CommandLineRunner run() {
 		return args -> {
 			grpcServer.initServer(grpcPort);
-
-			var client = new GrpcClient("localhost", grpcPort);
-			client.processBalance(7);
 		};
 	}
 

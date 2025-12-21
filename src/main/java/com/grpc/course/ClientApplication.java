@@ -1,17 +1,22 @@
 package com.grpc.course;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.grpc.course.common.GrpcClient;
+import com.grpc.course.common.PropertiesHelper;
 
 public class ClientApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientApplication.class);
 
     public static void main(String[] args) {
-        String host =  "localhost";
-        int port =  6565;
+        Map<String, String> config = PropertiesHelper.loadPropertiesFromFile();
+        
+        String host = config.getOrDefault("host", "localhost");
+        int port = Integer.parseInt(config.getOrDefault("grpc.server.port", "6565"));
         int accountNumber = 7;
 
         logger.info("Starting gRPC Client - Host: {}, Port: {}", host, port);

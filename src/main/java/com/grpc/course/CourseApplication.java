@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import com.grpc.course.common.GrpcClient;
 import com.grpc.course.common.GrpcServer;
 
 import jakarta.annotation.PreDestroy;
@@ -30,6 +31,9 @@ public class CourseApplication {
 	public CommandLineRunner run() {
 		return args -> {
 			grpcServer.initServer(grpcPort);
+
+			var client = new GrpcClient("localhost", grpcPort);
+			client.processBalance(7);
 		};
 	}
 

@@ -5,8 +5,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-
-import com.grpc.course.common.GrpcClient;
 import com.grpc.course.common.GrpcServer;
 
 import jakarta.annotation.PreDestroy;

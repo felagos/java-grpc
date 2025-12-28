@@ -4,7 +4,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
@@ -17,7 +16,6 @@ import com.grpc.course.WithdrawRequest;
 import com.grpc.course.repository.AccountRepository;
 import io.grpc.stub.StreamObserver;
 
-@Service
 public class BankService extends BankServiceGrpc.BankServiceImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(BankService.class);
@@ -71,10 +69,14 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
 
     @Override
     public void withdraw(WithdrawRequest request, StreamObserver<Money> responseObserver) {
+        logger.info("===== WITHDRAW METHOD CALLED =====");
+        logger.info("Received withdraw request for account number: {} with amount: {}", request.getAccountNumber(), request.getAmount());
+
         var accountNumber = request.getAccountNumber();
         var amount = request.getAmount();
 
         var balance = accountRepository.getBalance(accountNumber);
+        logger.info("Current balance for account {}: {}", accountNumber, balance);
 
         if(amount > balance) {
             logger.warn("Insufficient balance for account number: {}. Requested: {}, Available: {}", accountNumber, amount, balance);

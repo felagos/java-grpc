@@ -9,9 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-@Component
 public class GrpcServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcServer.class);

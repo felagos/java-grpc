@@ -32,5 +32,5 @@ message Money {
 service BankService {
     rpc GetAccountBalance (BalanceCheckRequest) returns (AccountBalance);
     rpc GetAllAccounts (google.protobuf.Empty) returns (AllAccountsResponse);
-    rpc Withdraw (stream WithdrawRequest) returns (stream Money);
+    rpc Withdraw (WithdrawRequest) returns (stream Money);
 }

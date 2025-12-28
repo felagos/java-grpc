@@ -1,8 +1,12 @@
 package com.grpc.course.services;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import com.grpc.course.AccountBalance;
 import com.grpc.course.AllAccountsResponse;
@@ -66,10 +70,37 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
     }
 
     @Override
-    public StreamObserver<WithdrawRequest> withdraw(StreamObserver<Money> responseObserver) {
-        return super.withdraw(responseObserver);
-    }
+    public void withdraw(WithdrawRequest request, StreamObserver<Money> responseObserver) {
+        var accountNumber = request.getAccountNumber();
+        var amount = request.getAmount();
 
+        var balance = accountRepository.getBalance(accountNumber);
+
+        if(amount > balance) {
+            logger.warn("Insufficient balance for account number: {}. Requested: {}, Available: {}", accountNumber, amount, balance);
+            
+            responseObserver.onCompleted();
+            
+            return;
+        }
+
+        for(int i = 0; i < amount / 10; i++) {
+            var money = Money.newBuilder()
+                    .setAmount(10)
+                    .build();
+
+            logger.info("Dispensing $10 for account number: {}", accountNumber);
+
+            accountRepository.deductBalance(accountNumber, 10);
+
+            responseObserver.onNext(money);
+
+            Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
+        }
+
+        responseObserver.onCompleted();
+    }
+    
     
 
 }

@@ -29,6 +29,7 @@ public class CourseApplication {
 	public CommandLineRunner run() {
 		return args -> {
 			grpcServer.initServer(grpcPort);
+			grpcServer.awaitTermination();
 		};
 	}
 

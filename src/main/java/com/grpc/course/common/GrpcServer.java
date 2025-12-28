@@ -55,13 +55,19 @@ public class GrpcServer {
 
             serverThread = new Thread(runnableServer);
 
-            serverThread.setDaemon(true);
+            serverThread.setDaemon(false);
             serverThread.setName("grpc-server-thread");
             serverThread.start();
 
         } catch (Exception e) {
             logger.error("Failed to start gRPC server", e);
             throw new RuntimeException("Failed to start gRPC server", e);
+        }
+    }
+
+    public void awaitTermination() throws InterruptedException {
+        if (server != null) {
+            server.awaitTermination();
         }
     }
 

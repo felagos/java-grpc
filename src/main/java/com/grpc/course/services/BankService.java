@@ -8,6 +8,8 @@ import com.grpc.course.AccountBalance;
 import com.grpc.course.AllAccountsResponse;
 import com.grpc.course.BalanceCheckRequest;
 import com.grpc.course.BankServiceGrpc;
+import com.grpc.course.Money;
+import com.grpc.course.WithdrawRequest;
 import com.grpc.course.repository.AccountRepository;
 import io.grpc.stub.StreamObserver;
 
@@ -62,5 +64,12 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
+
+    @Override
+    public StreamObserver<WithdrawRequest> withdraw(StreamObserver<Money> responseObserver) {
+        return super.withdraw(responseObserver);
+    }
+
+    
 
 }

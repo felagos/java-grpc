@@ -1,11 +1,15 @@
 package com.grpc.course.common;
 
+import java.util.Iterator;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.grpc.course.AccountBalance;
 import com.grpc.course.BalanceCheckRequest;
 import com.grpc.course.BankServiceGrpc;
+import com.grpc.course.Money;
+import com.grpc.course.WithdrawRequest;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -51,6 +55,17 @@ public class GrpcClient {
                 .build();
 
         stub.getAccountBalance(balanceRequest, createBalanceObserver());
+    }
+
+    public Iterator<Money> withdraw(int accountNumber, int amount) {
+        var stub = BankServiceGrpc.newBlockingStub(channel);
+
+        var request = WithdrawRequest.newBuilder()
+                .setAccountNumber(accountNumber)
+                .setAmount(amount)
+                .build();
+
+        return stub.withdraw(request);
     }
 
     private StreamObserver<AccountBalance> createBalanceObserver() {

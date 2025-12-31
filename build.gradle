@@ -37,7 +37,8 @@ dependencies {
 
 	implementation "build.buf.protoc-gen-validate:pgv-java-stub:${pgvVersion}"
 	
-	implementation 'javax.annotation:javax.annotation-api:1.3.2'
+	implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
+	compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
 
 	implementation 'org.slf4j:slf4j-api:2.0.9'
 	implementation 'ch.qos.logback:logback-classic:1.4.14'
@@ -62,6 +63,18 @@ protobuf {
 			grpc {}
 			javapgv {
 				option "lang=java"
+			}
+		}
+		all().each { task ->
+			task.builtins {
+				java {
+					option 'annotate_code=false'
+				}
+			}
+			task.plugins {
+				grpc {
+					option 'annotate_code=false'
+				}
 			}
 		}
 	}

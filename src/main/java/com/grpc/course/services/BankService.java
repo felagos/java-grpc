@@ -11,6 +11,7 @@ import com.grpc.course.AccountBalance;
 import com.grpc.course.AllAccountsResponse;
 import com.grpc.course.BalanceCheckRequest;
 import com.grpc.course.BankServiceGrpc;
+import com.grpc.course.DepositRequest;
 import com.grpc.course.Money;
 import com.grpc.course.WithdrawRequest;
 import com.grpc.course.repository.AccountRepository;
@@ -102,7 +103,11 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
 
         responseObserver.onCompleted();
     }
-    
-    
+
+    @Override
+    public StreamObserver<DepositRequest> deposit(StreamObserver<AccountBalance> responseObserver) {
+        // TODO Auto-generated method stub
+        return super.deposit(responseObserver);
+    }
 
 }

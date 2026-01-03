@@ -1,4 +1,4 @@
-package com.grpc.course.services;
+package com.grpc.course;
 
 import java.util.Map;
 import org.slf4j.Logger;
@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import com.grpc.course.common.GrpcClient;
 import com.grpc.course.common.PropertiesHelper;
 
-public class WithdrawClient {
+public class StreamingClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(WithdrawClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(StreamingClient.class);
 
     public static void main(String[] args) {
         var accountNumber = 1;

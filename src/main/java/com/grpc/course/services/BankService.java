@@ -106,8 +106,42 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
 
     @Override
     public StreamObserver<DepositRequest> deposit(StreamObserver<AccountBalance> responseObserver) {
-        // TODO Auto-generated method stub
-        return super.deposit(responseObserver);
+        return new StreamObserver<DepositRequest>() {
+
+            private final StreamObserver<AccountBalance> respObserver = responseObserver;
+            private int accountNumber;
+
+            @Override
+            public void onNext(DepositRequest request) {
+                
+                switch (request.getRequestCase()) {
+                    case ACCOUNT_NUMBER -> this.accountNumber = request.getAccountNumber(); 
+                    case MONEY -> BankService.this.accountRepository.addAmount(accountNumber, request.getMoney().getAmount());
+                    default -> {
+                        logger.error("Received unknown request type in deposit for account number: {}", accountNumber);
+                        throw new IllegalArgumentException("Unexpected value: " + request.getRequestCase()); 
+                    }              
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                logger.error("Error during deposit for account number: {}", accountNumber, t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                var balance = AccountBalance.newBuilder()
+                        .setAccountNumber(accountNumber)
+                        .setBalance(BankService.this.accountRepository.getBalance(accountNumber))
+                        .build();
+
+                logger.info("Deposit completed for account number: {}. New balance: {}", accountNumber, balance.getBalance());
+
+                respObserver.onNext(balance);
+                respObserver.onCompleted();
+            }
+        };
     }
 
 }

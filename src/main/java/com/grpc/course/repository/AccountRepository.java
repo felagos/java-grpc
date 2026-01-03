@@ -26,4 +26,9 @@ public class AccountRepository {
         accountData.computeIfPresent(accountNumber, (key, balance) -> balance - amount);
     }
 
+
+    public void addAmount(int accountNumber, int amount) {
+        accountData.computeIfPresent(accountNumber, (key, balance) -> balance + amount);
+    }
+
 }

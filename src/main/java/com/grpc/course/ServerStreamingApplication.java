@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import com.grpc.course.common.GrpcClient;
 import com.grpc.course.common.PropertiesHelper;
 
-public class StreamingClient {
+public class ServerStreamingApplication {
 
-    private static final Logger logger = LoggerFactory.getLogger(StreamingClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerStreamingApplication.class);
 
     public static void main(String[] args) {
         var accountNumber = 1;

@@ -25,7 +25,6 @@ public class GrpcClient {
     public GrpcClient(String host, int port) {
         initClient(host, port);
     }
-    
 
     private void initClient(String host, int port) {
         channel = ManagedChannelBuilder
@@ -36,7 +35,7 @@ public class GrpcClient {
 
     public void processBalance(int accountNumber) {
         var stub = BankServiceGrpc.newBlockingStub(channel);
-        
+
         var balanceRequest = BalanceCheckRequest.newBuilder()
                 .setAccountNumber(accountNumber)
                 .build();
@@ -50,7 +49,7 @@ public class GrpcClient {
 
     public void asyncProcessBalance(int accountNumber) {
         var stub = BankServiceGrpc.newStub(channel);
-        
+
         var balanceRequest = BalanceCheckRequest.newBuilder()
                 .setAccountNumber(accountNumber)
                 .build();
@@ -95,18 +94,25 @@ public class GrpcClient {
 
         try {
             requestObserver.onNext(
-                    DepositRequest.newBuilder()
-                            .setAccountNumber(accountNumber)
-                            .build()
+                    DepositRequest
+                        .newBuilder()
+                        .setAccountNumber(accountNumber)
+                        .build()
             );
 
             for (int amount : amounts) {
                 logger.info("Depositing {} to account {}", amount, accountNumber);
+
+                var money = Money.newBuilder().setAmount(amount).build();
+
                 requestObserver.onNext(
-                        DepositRequest.newBuilder()
-                                .setMoney(Money.newBuilder().setAmount(amount).build())
-                                .build()
+                        DepositRequest
+                        .newBuilder()
+                        .setMoney(money)
+                        .build()
                 );
+
+                requestObserver.wait();
             }
 
             requestObserver.onCompleted();

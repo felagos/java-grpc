@@ -115,8 +115,14 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
             public void onNext(DepositRequest request) {
                 
                 switch (request.getRequestCase()) {
-                    case ACCOUNT_NUMBER -> this.accountNumber = request.getAccountNumber(); 
-                    case MONEY -> BankService.this.accountRepository.addAmount(accountNumber, request.getMoney().getAmount());
+                    case ACCOUNT_NUMBER -> {
+                        logger.info("Setting account number for deposit: {}", request.getAccountNumber());
+                        this.accountNumber = request.getAccountNumber();
+                    } 
+                    case MONEY -> {
+                        logger.info("Depositing amount: {} to account number: {}", request.getMoney().getAmount(), accountNumber);
+                        BankService.this.accountRepository.addAmount(accountNumber, request.getMoney().getAmount());
+                    }
                     default -> {
                         logger.error("Received unknown request type in deposit for account number: {}", accountNumber);
                         throw new IllegalArgumentException("Unexpected value: " + request.getRequestCase()); 

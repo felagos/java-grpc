@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.grpc.course.AccountBalance;
 import com.grpc.course.BalanceCheckRequest;
 import com.grpc.course.BankServiceGrpc;
+import com.grpc.course.DepositRequest;
 import com.grpc.course.Money;
 import com.grpc.course.WithdrawRequest;
 
@@ -66,6 +67,53 @@ public class GrpcClient {
                 .build();
 
         return stub.withdraw(request);
+    }
+
+    public void deposit(int accountNumber, int... amounts) {
+        var stub = BankServiceGrpc.newStub(channel);
+
+        var responseObserver = new StreamObserver<AccountBalance>() {
+            @Override
+            public void onNext(AccountBalance value) {
+                logger.info("Final Account Balance - Account Number: {}, Balance: {}",
+                        value.getAccountNumber(),
+                        value.getBalance());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                logger.error("Error during deposit", t);
+            }
+
+            @Override
+            public void onCompleted() {
+                logger.info("Deposit completed successfully");
+            }
+        };
+
+        var requestObserver = stub.deposit(responseObserver);
+
+        try {
+            requestObserver.onNext(
+                    DepositRequest.newBuilder()
+                            .setAccountNumber(accountNumber)
+                            .build()
+            );
+
+            for (int amount : amounts) {
+                logger.info("Depositing {} to account {}", amount, accountNumber);
+                requestObserver.onNext(
+                        DepositRequest.newBuilder()
+                                .setMoney(Money.newBuilder().setAmount(amount).build())
+                                .build()
+                );
+            }
+
+            requestObserver.onCompleted();
+        } catch (Exception e) {
+            logger.error("Error sending deposit requests", e);
+            requestObserver.onError(e);
+        }
     }
 
     private StreamObserver<AccountBalance> createBalanceObserver() {

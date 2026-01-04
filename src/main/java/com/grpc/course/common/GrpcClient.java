@@ -95,10 +95,9 @@ public class GrpcClient {
         try {
             requestObserver.onNext(
                     DepositRequest
-                        .newBuilder()
-                        .setAccountNumber(accountNumber)
-                        .build()
-            );
+                            .newBuilder()
+                            .setAccountNumber(accountNumber)
+                            .build());
 
             for (int amount : amounts) {
                 logger.info("Depositing {} to account {}", amount, accountNumber);
@@ -107,15 +106,14 @@ public class GrpcClient {
 
                 requestObserver.onNext(
                         DepositRequest
-                        .newBuilder()
-                        .setMoney(money)
-                        .build()
-                );
+                                .newBuilder()
+                                .setMoney(money)
+                                .build());
 
-                requestObserver.wait();
             }
 
             requestObserver.onCompleted();
+            requestObserver.wait();
         } catch (Exception e) {
             logger.error("Error sending deposit requests", e);
             requestObserver.onError(e);

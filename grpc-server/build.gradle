@@ -4,12 +4,12 @@ plugins {
 	id 'com.google.protobuf' version '0.9.4'
 }
 
-group = 'com.gcrp'
+group = 'com.grpc'
 version = '0.0.1-SNAPSHOT'
 description = 'gRPC Server Application'
 
 application {
-	mainClass = 'com.grpc.course.CourseApplication'
+	mainClass = 'com.grpc.course.ServerApplication'
 }
 
 java {

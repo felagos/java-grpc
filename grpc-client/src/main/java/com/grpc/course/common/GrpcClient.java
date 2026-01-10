@@ -1,6 +1,10 @@
 package com.grpc.course.common;
 
 import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +77,7 @@ public class GrpcClient {
 
     public void deposit(int accountNumber, int... amounts) {
         var stub = BankServiceGrpc.newStub(channel);
+        CountDownLatch latch = new CountDownLatch(1);
 
         var responseObserver = new StreamObserver<AccountBalance>() {
             @Override
@@ -85,11 +90,13 @@ public class GrpcClient {
             @Override
             public void onError(Throwable t) {
                 logger.error("Error during deposit", t);
+                latch.countDown();
             }
 
             @Override
             public void onCompleted() {
                 logger.info("Deposit completed successfully");
+                latch.countDown();
             }
         };
 
@@ -116,7 +123,7 @@ public class GrpcClient {
             }
 
             requestObserver.onCompleted();
-            requestObserver.wait();
+            latch.await(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.error("Error sending deposit requests", e);
             requestObserver.onError(e);
@@ -124,12 +131,16 @@ public class GrpcClient {
     }
 
 
-    public void transfer(int[][] transfers) {
+    public Iterator<TransferResponse> transfer(int[][] transfers) {
         var stub = TransferServiceGrpc.newStub(channel);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        List<TransferResponse> responses = new ArrayList<>();
 
         var responseObserver = new StreamObserver<TransferResponse>() {
             @Override
             public void onNext(TransferResponse value) {
+                responses.add(value);
                 logger.info("Transfer Response - Status: {}, From Account: {}, To Account: {}",
                         value.getStatus(),
                         value.getFromAccount().getAccountNumber(),
@@ -142,11 +153,13 @@ public class GrpcClient {
             @Override
             public void onError(Throwable t) {
                 logger.error("Error during transfer", t);
+                latch.countDown();
             }
 
             @Override
             public void onCompleted() {
                 logger.info("All transfers completed successfully");
+                latch.countDown();
             }
         };
 
@@ -171,11 +184,13 @@ public class GrpcClient {
             }
 
             requestObserver.onCompleted();
-            requestObserver.wait();
+            latch.await(5, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.error("Error sending transfer requests", e);
             requestObserver.onError(e);
         }
+
+        return responses.iterator();
     }
 
     private StreamObserver<AccountBalance> createBalanceObserver() {

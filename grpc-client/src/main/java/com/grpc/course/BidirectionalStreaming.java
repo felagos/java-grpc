@@ -21,7 +21,17 @@ public class BidirectionalStreaming {
             {3001, 1001, 100}
         };
 
-        client.transfer(transfers);
+        var transferIterator = client.transfer(transfers);
+        
+        while (transferIterator.hasNext()) {
+            var response = transferIterator.next();
+            System.out.println("Transfer Status: " + response.getStatus());
+            System.out.println("From Account: " + response.getFromAccount().getAccountNumber() + 
+                             ", Balance: " + response.getFromAccount().getBalance());
+            System.out.println("To Account: " + response.getToAccount().getAccountNumber() + 
+                             ", Balance: " + response.getToAccount().getBalance());
+            System.out.println("---");
+        }
 
      }
 

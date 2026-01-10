@@ -1,20 +1,23 @@
 package com.grpc.course;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.grpc.course.common.GrpcClient;
 import com.grpc.course.common.PropertiesHelper;
+import com.google.common.util.concurrent.Uninterruptibles;
 
-public class ServerStreamingApplication {
+public class ClientStreaming {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServerStreamingApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientStreaming.class);
 
     public static void main(String[] args) {
         var accountNumber = 1;
-        var amount = 100;
 
-        logger.info("Initiating withdraw request for account: {} with amount: {}", accountNumber, amount);
+        logger.info("Initiating deposit request for account: {}", accountNumber);
 
         Map<String, String> config = PropertiesHelper.loadPropertiesFromFile();
 
@@ -23,11 +26,10 @@ public class ServerStreamingApplication {
 
         var client = new GrpcClient(host, port);
 
-        var response = client.withdraw(accountNumber, amount);
+        client.deposit(accountNumber, 10, 20, 30, 40, 50);
 
-        while(response.hasNext()) {
-            var money = response.next();
-            logger.info("Received money: {}", money);
-        }
+        Uninterruptibles.sleepUninterruptibly(3, TimeUnit.SECONDS);
+
+        logger.info("Deposit process finished");
     }
 }

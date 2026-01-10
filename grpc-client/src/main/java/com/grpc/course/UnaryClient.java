@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import com.grpc.course.common.GrpcClient;
 import com.grpc.course.common.PropertiesHelper;
 
-public class ClientApplication {
+public class UnaryClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClientApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(UnaryClient.class);
 
     public static void main(String[] args) {
         Map<String, String> config = PropertiesHelper.loadPropertiesFromFile();

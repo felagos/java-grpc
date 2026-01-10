@@ -37,7 +37,8 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
                 .setBalance(balance)
                 .build();
 
-        logger.info("Sending account balance: {}, for account number: {}", accountBalance.getBalance(), accountBalance.getAccountNumber());
+        logger.info("Sending account balance: {}, for account number: {}", accountBalance.getBalance(),
+                accountBalance.getAccountNumber());
 
         responseObserver.onNext(accountBalance);
         responseObserver.onCompleted();
@@ -71,7 +72,8 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
     @Override
     public void withdraw(WithdrawRequest request, StreamObserver<Money> responseObserver) {
         logger.info("===== WITHDRAW METHOD CALLED =====");
-        logger.info("Received withdraw request for account number: {} with amount: {}", request.getAccountNumber(), request.getAmount());
+        logger.info("Received withdraw request for account number: {} with amount: {}", request.getAccountNumber(),
+                request.getAmount());
 
         var accountNumber = request.getAccountNumber();
         var amount = request.getAmount();
@@ -79,15 +81,16 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
         var balance = accountRepository.getBalance(accountNumber);
         logger.info("Current balance for account {}: {}", accountNumber, balance);
 
-        if(amount > balance) {
-            logger.warn("Insufficient balance for account number: {}. Requested: {}, Available: {}", accountNumber, amount, balance);
-            
+        if (amount > balance) {
+            logger.warn("Insufficient balance for account number: {}. Requested: {}, Available: {}", accountNumber,
+                    amount, balance);
+
             responseObserver.onCompleted();
-            
+
             return;
         }
 
-        for(int i = 0; i < amount / 10; i++) {
+        for (int i = 0; i < amount / 10; i++) {
             var money = Money.newBuilder()
                     .setAmount(10)
                     .build();
@@ -113,20 +116,21 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
 
             @Override
             public void onNext(DepositRequest request) {
-                
+
                 switch (request.getRequestCase()) {
                     case ACCOUNT_NUMBER -> {
                         logger.info("Setting account number for deposit: {}", request.getAccountNumber());
                         this.accountNumber = request.getAccountNumber();
-                    } 
+                    }
                     case MONEY -> {
-                        logger.info("Depositing amount: {} to account number: {}", request.getMoney().getAmount(), accountNumber);
+                        logger.info("Depositing amount: {} to account number: {}", request.getMoney().getAmount(),
+                                accountNumber);
                         BankService.this.accountRepository.addAmount(accountNumber, request.getMoney().getAmount());
                     }
                     default -> {
                         logger.error("Received unknown request type in deposit for account number: {}", accountNumber);
-                        throw new IllegalArgumentException("Unexpected value: " + request.getRequestCase()); 
-                    }              
+                        throw new IllegalArgumentException("Unexpected value: " + request.getRequestCase());
+                    }
                 }
             }
 
@@ -142,7 +146,8 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
                         .setBalance(BankService.this.accountRepository.getBalance(accountNumber))
                         .build();
 
-                logger.info("Deposit completed for account number: {}. New balance: {}", accountNumber, balance.getBalance());
+                logger.info("Deposit completed for account number: {}. New balance: {}", accountNumber,
+                        balance.getBalance());
 
                 respObserver.onNext(balance);
                 respObserver.onCompleted();

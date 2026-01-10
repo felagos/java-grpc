@@ -29,6 +29,20 @@ public class TransferRequestHandler implements StreamObserver<TransferRequest> {
                 value.getFromAccount(), value.getToAccount(), value.getAmount());
 
         var status = getStatus(value);
+
+        if(status == TransferStatus.COMPLETED) {
+            logger.info("Transfer completed successfully.");
+
+            var response = TransferResponse.newBuilder()
+                    .setStatus(status)
+                    .setFromAccount(toAccountBalance(value.getFromAccount()))
+                    .setToAccount(toAccountBalance(value.getToAccount()))
+                    .setStatus(status)
+                    .build();
+            
+            responseObserver.onNext(response);
+            return;
+        } 
         
         var response = TransferResponse.newBuilder()
                 .setStatus(status)

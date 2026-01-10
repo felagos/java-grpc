@@ -3,17 +3,13 @@ syntax = "proto3";
 package proto.common;
 
 import "google/protobuf/empty.proto";
+import "account-balance.proto";
 
 option java_package = "com.grpc.course";
 option java_multiple_files = true;
 
 message BalanceCheckRequest {
     int32 account_number = 1;
-}
-
-message AccountBalance {
-    int32 balance = 1;
-    int32 account_number = 2;
 }
 
 message AllAccountsResponse {

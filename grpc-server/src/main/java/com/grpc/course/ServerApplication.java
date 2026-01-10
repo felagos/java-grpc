@@ -21,7 +21,7 @@ public class ServerApplication {
 		AccountRepository accountRepository = new AccountRepository();
 		
 		BankService bankService = new BankService(accountRepository);
-		TransferService transferService = new TransferService();
+		TransferService transferService = new TransferService(accountRepository);
 
 		GrpcServer grpcServer = new GrpcServer(List.of(bankService, transferService));
 

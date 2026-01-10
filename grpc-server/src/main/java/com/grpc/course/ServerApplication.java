@@ -3,6 +3,8 @@ package com.grpc.course;
 import com.grpc.course.common.GrpcServer;
 import com.grpc.course.repository.AccountRepository;
 import com.grpc.course.services.BankService;
+import com.grpc.course.services.TransferService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +19,11 @@ public class ServerApplication {
 		logger.info("Starting gRPC Console Application...");
 
 		AccountRepository accountRepository = new AccountRepository();
+		
 		BankService bankService = new BankService(accountRepository);
-		GrpcServer grpcServer = new GrpcServer(List.of(bankService));
+		TransferService transferService = new TransferService();
+
+		GrpcServer grpcServer = new GrpcServer(List.of(bankService, transferService));
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			logger.info("Shutdown hook triggered");

@@ -4,15 +4,19 @@
 UNAME_S := $(shell uname -s 2>/dev/null)
 ifeq ($(UNAME_S),Linux)
     DETECTED_OS := Linux
+    GRADLEW := ./gradlew
 endif
 ifeq ($(UNAME_S),Darwin)
     DETECTED_OS := Darwin
+    GRADLEW := ./gradlew
 endif
 ifeq ($(OS),Windows_NT)
     DETECTED_OS := Windows
+    GRADLEW := .\gradlew.bat
 endif
 ifndef DETECTED_OS
     DETECTED_OS := Windows
+    GRADLEW := .\gradlew.bat
 endif
 
 help:
@@ -23,14 +27,14 @@ help:
 
 generate-protos:
 	@echo "Generating protos in grpc-client..."
-	cd grpc-client && .\gradlew.bat generateProto
+	cd grpc-client && $(GRADLEW) generateProto
 	@echo "Generating protos in grpc-server..."
-	cd grpc-server && .\gradlew.bat generateProto
+	cd grpc-server && $(GRADLEW) generateProto
 	@echo "Proto generation completed!"
 
 server-run:
 	@echo "Starting gRPC server..."
-	cd grpc-server && .\gradlew.bat run
+	cd grpc-server && $(GRADLEW) run
 
 server-stop:
 	@echo "Stopping gRPC server..."

@@ -1,8 +1,12 @@
 package com.grpc.course.common;
 
+import build.buf.protovalidate.Validator;
+import build.buf.protovalidate.ValidatorFactory;
+import com.grpc.course.interceptor.ValidationInterceptor;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +37,12 @@ public class GrpcServer {
         try {
             var serverBuilder = ServerBuilder.forPort(port);
 
+            Validator validator = ValidatorFactory.newBuilder().build();
+            ValidationInterceptor validationInterceptor = new ValidationInterceptor(validator);
+
             services.forEach(service -> {
-                serverBuilder.addService(service);
+                var serviceWithInterceptor = ServerInterceptors.intercept(service, validationInterceptor);
+                serverBuilder.addService(serviceWithInterceptor);
                 logger.info("Registered gRPC service: {}", service.getClass().getSimpleName());
             });
 

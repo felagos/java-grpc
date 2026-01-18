@@ -4,12 +4,22 @@ package proto.common;
 
 import "google/protobuf/empty.proto";
 import "account-balance.proto";
+import "buf/validate/validate.proto";
 
 option java_package = "com.grpc.course";
 option java_multiple_files = true;
 
 message BalanceCheckRequest {
-    int32 account_number = 1;
+    int32 account_number = 1 [
+        (buf.validate.field).int32 = {
+            gt: 0
+        },
+        (buf.validate.field).cel = {
+            id: "account_number_positive"
+            message: "El número de cuenta debe ser un valor positivo"
+            expression: "this > 0"
+        }
+    ];
 }
 
 message AllAccountsResponse {
@@ -17,17 +27,53 @@ message AllAccountsResponse {
 }
 
 message WithdrawRequest {
-    int32 account_number = 1;
-    int32 amount = 2;
+    int32 account_number = 1 [
+        (buf.validate.field).int32 = {
+            gt: 0
+        },
+        (buf.validate.field).cel = {
+            id: "account_number_positive"
+            message: "El número de cuenta debe ser un valor positivo mayor a 0"
+            expression: "this > 0"
+        }
+    ];
+    int32 amount = 2 [
+        (buf.validate.field).int32 = {
+            gt: 0
+        },
+        (buf.validate.field).cel = {
+            id: "amount_positive"
+            message: "El monto a retirar debe ser mayor a 0"
+            expression: "this > 0"
+        }
+    ];
 }
 
 message Money {
-    int32 amount = 1;
+    int32 amount = 1 [
+        (buf.validate.field).int32 = {
+            gt: 0
+        },
+        (buf.validate.field).cel = {
+            id: "amount_positive"
+            message: "El monto debe ser mayor a 0"
+            expression: "this > 0"
+        }
+    ];
 }
 
 message DepositRequest {
     oneof request{
-        int32 account_number = 1;
+        int32 account_number = 1 [
+            (buf.validate.field).int32 = {
+                gt: 0
+            },
+            (buf.validate.field).cel = {
+                id: "account_number_positive"
+                message: "El número de cuenta debe ser mayor a 0"
+                expression: "this > 0"
+            }
+        ];
         Money money = 2;
     }
 }

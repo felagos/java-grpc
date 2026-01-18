@@ -28,6 +28,7 @@ ext {
 	jacksonVersion = '2.18.1'
 	tomcatAnnotationsVersion = '6.0.53'
 	pgvVersion = '1.0.4'
+	protovalidateVersion = '1.1.0'
 }
 
 dependencies {
@@ -36,6 +37,7 @@ dependencies {
 	implementation "io.grpc:grpc-stub:${grpcVersion}"
 
 	implementation "build.buf.protoc-gen-validate:pgv-java-stub:${pgvVersion}"
+	implementation "build.buf:protovalidate:${protovalidateVersion}"
 	
 	implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
 	compileOnly 'javax.annotation:javax.annotation-api:1.3.2'

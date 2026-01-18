@@ -1,10 +1,8 @@
 package com.grpc.course.services;
 
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.protobuf.Empty;
 import com.grpc.course.AccountBalance;
@@ -15,8 +13,6 @@ import com.grpc.course.DepositRequest;
 import com.grpc.course.Money;
 import com.grpc.course.WithdrawRequest;
 import com.grpc.course.repository.AccountRepository;
-import com.grpc.course.validator.RequestValidator;
-
 import io.grpc.stub.StreamObserver;
 
 public class BankService extends BankServiceGrpc.BankServiceImplBase {
@@ -28,36 +24,9 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
         this.accountRepository = accountRepository;
     }
 
-    private boolean handleGetAccountBalanceError(BalanceCheckRequest request, StreamObserver<AccountBalance> responseObserver) {
-        var isValidAccountError = RequestValidator.validateAccount(request.getAccountNumber());
-        var isValidAmountError = RequestValidator.isAmountDivisibleBy10(request.getAccountNumber());
-
-        if (isValidAccountError.isPresent()) {
-            logger.error("Validation error for account number: {}: {}", request.getAccountNumber(),
-                    isValidAccountError.get().getDescription());
-            responseObserver.onError(isValidAccountError.get().asRuntimeException());
-            return false;
-        }
-
-        if (isValidAmountError.isPresent()) {
-            logger.error("Validation error for amount: {}: {}", request.getAccountNumber(),
-                    isValidAmountError.get().getDescription());
-            responseObserver.onError(isValidAmountError.get().asRuntimeException());
-            return false;
-        }
-
-        return true;
-    }
-
     @Override
     public void getAccountBalance(BalanceCheckRequest request, StreamObserver<AccountBalance> responseObserver) {
         logger.info("Received request for account number: {}", String.valueOf(request.getAccountNumber()).trim());
-
-        var isValidRequest = this.handleGetAccountBalanceError(request, responseObserver);
-
-        if (!isValidRequest) {
-            return;
-        }
 
         var accountNumber = request.getAccountNumber();
         var balance = accountRepository.getBalance(accountNumber);

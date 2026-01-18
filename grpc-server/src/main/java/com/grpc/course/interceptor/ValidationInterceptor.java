@@ -23,13 +23,11 @@ public class ValidationInterceptor implements ServerInterceptor {
             Metadata headers,
             ServerCallHandler<ReqT, RespT> next) {
 
-        // Crear el listener del siguiente interceptor una sola vez
         final ServerCall.Listener<ReqT> delegate = next.startCall(call, headers);
 
         return new ServerCall.Listener<ReqT>() {
             @Override
             public void onMessage(ReqT message) {
-                // Validar si es un Message de protobuf
                 if (message instanceof Message) {
                     try {
                         ValidationResult result = validator.validate((Message) message);
@@ -49,7 +47,6 @@ public class ValidationInterceptor implements ServerInterceptor {
                     }
                 }
 
-                // Delegar al siguiente interceptor si la validación fue exitosa
                 delegate.onMessage(message);
             }
 

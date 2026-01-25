@@ -35,7 +35,11 @@ public class GrpcServer {
         }
 
         try {
-            var serverBuilder = ServerBuilder.forPort(port);
+            var serverBuilder = ServerBuilder
+                .forPort(port)
+                .keepAliveTime(10, TimeUnit.SECONDS)
+                .keepAliveTimeout(1, TimeUnit.SECONDS)
+                .maxConnectionIdle(25, TimeUnit.SECONDS);
 
             Validator validator = ValidatorFactory.newBuilder().build();
             ValidationInterceptor validationInterceptor = new ValidationInterceptor(validator);

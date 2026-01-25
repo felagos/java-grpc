@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  grpc-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: grpc-server:latest
+    container_name: grpc-server
+    ports:
+      - "6565:6565"
+    environment:
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    restart: unless-stopped
+    networks:
+      - grpc-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "ss -tlnp | grep :6565 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  grpc-network:
+    driver: bridge

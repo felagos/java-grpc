@@ -1,4 +1,4 @@
-.PHONY: generate-protos server-run server-stop help
+.PHONY: generate-protos server-run server-stop server-rebuild server-logs help
 
 # Detectar el sistema operativo
 UNAME_S := $(shell uname -s 2>/dev/null)
@@ -22,8 +22,10 @@ endif
 help:
 	@echo "Available commands:"
 	@echo "  make generate-protos   - Generate proto files in both grpc-client and grpc-server"
-	@echo "  make server-run        - Start the gRPC server"
-	@echo "  make server-stop       - Stop the gRPC server"
+	@echo "  make server-run        - Start the gRPC server with Docker Compose"
+	@echo "  make server-stop       - Stop the gRPC server (Docker Compose)"
+	@echo "  make server-rebuild    - Rebuild and restart the gRPC server image"
+	@echo "  make server-logs       - View server logs"
 
 generate-protos:
 	@echo "Generating protos in grpc-client..."
@@ -33,14 +35,20 @@ generate-protos:
 	@echo "Proto generation completed!"
 
 server-run:
-	@echo "Starting gRPC server..."
-	cd grpc-server && $(GRADLEW) run
+	@echo "Starting gRPC server with Docker Compose..."
+	cd grpc-server && docker-compose up -d
+	@echo "Server started. Use 'docker-compose logs -f' to view logs"
 
 server-stop:
 	@echo "Stopping gRPC server..."
-	ifeq ($(DETECTED_OS),Windows)
-		@for /f "tokens=5" %%a in ('netstat -ano 2^>nul ^| findstr :6565') do taskkill /F /PID %%a 2>nul
-	else
-		@lsof -i :6565 | grep -v COMMAND | awk '{print $$2}' | xargs kill -9 2>/dev/null || echo "No process found on port 6565"
-	endif
-		@echo "Server stopped"
+	cd grpc-server && docker-compose down
+	@echo "Server stopped"
+
+server-rebuild:
+	@echo "Rebuilding gRPC server image..."
+	cd grpc-server && docker-compose up -d --build
+	@echo "Server rebuilt and restarted"
+
+server-logs:
+	@echo "Viewing server logs..."
+	cd grpc-server && docker-compose logs -f

@@ -93,3 +93,15 @@ sourceSets {
 processResources {
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
+
+jar {
+	manifest {
+		attributes(
+			'Main-Class': 'com.grpc.course.ServerApplication'
+		)
+	}
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

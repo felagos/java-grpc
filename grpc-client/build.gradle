@@ -92,3 +92,10 @@ sourceSets {
 processResources {
 	duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
+
+task runUnaryClientAlive(type: JavaExec) {
+	group = 'application'
+	description = 'Run UnaryClientAlive'
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'com.grpc.course.UnaryClientAlive'
+}

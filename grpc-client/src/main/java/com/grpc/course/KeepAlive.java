@@ -15,9 +15,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 
-public class KeepAliveDemo {
+public class KeepAlive {
 
-    private static final Logger logger = LoggerFactory.getLogger(KeepAliveDemo.class);
+    private static final Logger logger = LoggerFactory.getLogger(KeepAlive.class);
 
     public static void main(String[] args) {
         Map<String, String> config = PropertiesHelper.loadPropertiesFromFile();

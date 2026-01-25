@@ -99,3 +99,10 @@ task runUnaryClientAlive(type: JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = 'com.grpc.course.UnaryClientAlive'
 }
+
+task runKeepAliveDemo(type: JavaExec) {
+	group = 'application'
+	description = 'Run KeepAliveDemo'
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'com.grpc.course.KeepAliveDemo'
+}

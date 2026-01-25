@@ -1,4 +1,4 @@
-.PHONY: generate-protos server-run server-stop server-rebuild server-logs help
+.PHONY: generate-protos force-dependencies server-run server-stop server-rebuild server-logs help
 
 # Detectar el sistema operativo
 UNAME_S := $(shell uname -s 2>/dev/null)
@@ -22,6 +22,7 @@ endif
 help:
 	@echo "Available commands:"
 	@echo "  make generate-protos   - Generate proto files in both grpc-client and grpc-server"
+	@echo "  make force-dependencies - Force refresh dependencies and build both modules"
 	@echo "  make server-run        - Start the gRPC server with Docker Compose"
 	@echo "  make server-stop       - Stop the gRPC server (Docker Compose)"
 	@echo "  make server-rebuild    - Rebuild and restart the gRPC server image"
@@ -33,6 +34,13 @@ generate-protos:
 	@echo "Generating protos in grpc-server..."
 	cd grpc-server && $(GRADLEW) generateProto
 	@echo "Proto generation completed!"
+
+force-dependencies:
+	@echo "Forcing dependencies refresh and building grpc-client..."
+	cd grpc-client && $(GRADLEW) clean build --refresh-dependencies
+	@echo "Forcing dependencies refresh and building grpc-server..."
+	cd grpc-server && $(GRADLEW) clean build --refresh-dependencies
+	@echo "Dependencies forced and build completed for both modules!"
 
 server-run:
 	@echo "Starting gRPC server with Docker Compose..."

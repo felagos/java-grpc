@@ -37,6 +37,8 @@ public class GrpcClient {
         channel = ManagedChannelBuilder
                 .forAddress(host, port)
                 .usePlaintext()
+                .keepAliveTime(10, TimeUnit.SECONDS)
+                .keepAliveTimeout(5, TimeUnit.SECONDS)
                 .build();
     }
 

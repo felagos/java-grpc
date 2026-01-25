@@ -10,11 +10,11 @@ COPY gradle gradle
 COPY settings.gradle .
 COPY build.gradle .
 
+# Fix line endings and make gradlew executable
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
+
 # Copy source code and proto files
 COPY src src
-
-# Make gradlew executable
-RUN chmod +x gradlew
 
 # Build the application (generates protos and compiles Java)
 RUN ./gradlew clean build -x test --no-daemon

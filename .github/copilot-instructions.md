@@ -1,95 +1,136 @@
 # Copilot Instructions for java-grpc Project
 
 ## Project Overview
-Spring Boot 4.0.0 application with gRPC integration using Protocol Buffers. The project uses Gradle for builds with Protobuf code generation.
+Multi-module Java gRPC application showcasing different streaming patterns (unary, server streaming, client streaming, bidirectional). Built with pure gRPC (not Spring Boot), using Gradle for builds and Protocol Buffers for service definitions.
 
 ## Architecture & Key Components
 
+### Module Structure
+- **grpc-server/**: gRPC server implementing banking services with validation
+- **grpc-client/**: Multiple client applications demonstrating different gRPC patterns
+- **Shared proto files**: Service definitions synchronized between modules
+
 ### Generated Code Structure
 - **Proto files**: `src/main/proto/*.proto` - Define message schemas and gRPC services
-- **Generated Java**: `build/generated/source/proto/main/java/` - Auto-generated from proto files (DO NOT EDIT)
-- **Generated gRPC stubs**: `build/generated/source/proto/main/grpc/` - Auto-generated service stubs
+- **Generated Java**: `build/generated/source/proto/main/java/` - Auto-generated from proto files (NEVER EDIT)
+- **Package mapping**: Proto messages generate into `com.grpc.course` package
 
 ### Core Dependencies
-- **gRPC**: v1.72.0 (netty-shaded, protobuf, stub)
+- **gRPC**: v1.74.0 (netty-shaded, protobuf, stub)
 - **Protocol Buffers**: v3.25.5
-- **Java**: Version 21 (configured via toolchain)
-- **Spring Boot**: v4.0.0
+- **Java**: Version 21 (via toolchain)
+- **Validation**: buf/protovalidate for request validation
+- **Logging**: SLF4J + Logback
 
 ## Critical Developer Workflows
 
-### Building the Project
+### Building Both Modules
 ```bash
-# Windows (PowerShell)
+# Root level - builds both modules
 .\gradlew.bat build
 
-# This triggers proto compilation BEFORE Java compilation
-# Generated classes appear in build/generated/source/proto/main/
+# Or build specific modules
+cd grpc-server && .\gradlew.bat build
+cd grpc-client && .\gradlew.bat build
+
+# Generate protos only
+.\gradlew.bat generateProto
 ```
 
-### Proto File Changes
-When modifying `.proto` files:
-1. Run `.\gradlew.bat generateProto` to regenerate Java classes
-2. Generated classes are in `build/generated/source/proto/main/java/`
-3. Import generated classes with their outer class name (e.g., `PersonOuterClass.Person`)
-
-### Running the Application
+### Running Server & Clients
 ```bash
-.\gradlew.bat bootRun
+# Start server (port 6565)
+cd grpc-server && .\gradlew.bat run
+
+# Run different client types
+cd grpc-client && .\gradlew.bat run  # UnaryClient (default)
+cd grpc-client && .\gradlew.bat run --args="ServerStreaming"
+cd grpc-client && .\gradlew.bat run --args="ClientStreaming"
+```
+
+### Docker Support
+```bash
+# Server with Docker Compose
+make server-run     # Start server in Docker
+make server-logs    # View logs
+make server-stop    # Stop container
 ```
 
 ## Project-Specific Conventions
 
 ### Package Structure
-- Main application: `com.grpc.course`
-- Proto package: Root package (no package declaration in `person.proto`)
-- Generated classes: Top-level package (PersonOuterClass)
+- **Services**: `com.grpc.course.services` - gRPC service implementations
+- **Handlers**: `com.grpc.course.handlers` - StreamObserver implementations for streaming
+- **Repository**: `com.grpc.course.repository` - In-memory data storage (AccountRepository)
+- **Common**: `com.grpc.course.common` - Shared utilities (GrpcServer, GrpcClient)
+- **Interceptors**: `com.grpc.course.interceptor` - Request validation logic
+- **Generated**: `com.grpc.course` - All proto-generated classes
 
-### Proto Message Pattern
-Proto files generate outer classes containing message definitions:
+### Service Implementation Pattern
+All gRPC services extend generated `*ImplBase` classes:
 ```java
-// From person.proto -> PersonOuterClass.java
-PersonOuterClass.Person person = PersonOuterClass.Person.newBuilder()
-    .setName("John")
-    .setAge(30)
-    .build();
+public class BankService extends BankServiceGrpc.BankServiceImplBase {
+    @Override
+    public void getAccountBalance(BalanceCheckRequest request, 
+                                 StreamObserver<AccountBalance> responseObserver) {
+        // Implementation with validation, logging, and error handling
+    }
+}
 ```
 
-### Gradle Plugin Configuration
-The `com.google.protobuf` plugin (v0.9.4) automatically:
-- Compiles `.proto` files during build
-- Generates both message classes and gRPC service stubs
-- Integrates with sourceSets for IDE recognition
+### Streaming Patterns
+- **Server Streaming**: Return `Iterator<Response>` or use `StreamObserver.onNext()` multiple times
+- **Client Streaming**: Return `StreamObserver<Request>`, accumulate in `onNext()`, emit in `onCompleted()`
+- **Bidirectional**: Both sides stream simultaneously using dedicated handler classes
 
-## Adding New Features
+### Validation Integration
+Proto messages use buf/validate constraints:
+```proto
+message WithdrawRequest {
+    int32 account_number = 1 [(buf.validate.field).int32 = {gt: 0}];
+    int32 amount = 2 [(buf.validate.field).int32 = {gt: 0}];
+}
+```
+Server automatically validates all requests via `ValidationInterceptor`.
 
-### Creating gRPC Services
-1. Define service in `.proto` file with `service` keyword
-2. Run `.\gradlew.bat generateProto`
-3. Implement generated service base class (e.g., `PersonServiceGrpc.PersonServiceImplBase`)
-4. Register service with gRPC server
+## Critical Implementation Details
 
-### Adding Proto Messages
-1. Create/modify `.proto` files in `src/main/proto/`
-2. Use proto3 syntax
-3. Run gradle build to generate Java classes
-4. Never manually edit generated classes
+### Server Configuration
+- **Port**: 6565 (hardcoded in `ServerApplication.GRPC_PORT`)
+- **Services**: BankService, TransferService, GuessService auto-registered
+- **Validation**: All services wrapped with `ValidationInterceptor`
+- **Keep-alive**: 10s keepAliveTime, 1s timeout, 25s maxConnectionIdle
+
+### Account Data
+- **Pre-initialized**: 5 accounts (IDs 1-5) with balances $100-$500
+- **Thread-safe**: AccountRepository uses thread-safe Map operations
+- **In-memory**: Data resets on server restart
+
+### Client Connection Management
+- **Two channels**: `channel` (standard) and `channelAlive` (with keep-alive)
+- **Configuration**: `application.properties` sets host/port (`grpc.server.port=6565`)
 
 ## Common Pitfalls
 
-### Build Order
-Always run proto generation before Java compilation fails. The Gradle build handles this automatically via `generateProtoTasks`, but manual compilation requires explicit proto generation first.
+### Proto Code Generation
+- Always run `.\gradlew.bat generateProto` after modifying `.proto` files
+- Generated classes appear in `build/generated/source/proto/main/java/`
+- Import generated messages directly: `import com.grpc.course.AccountBalance;`
+- **Never** edit generated classes manually
 
-### Import Paths
-Generated proto classes are in the default package. Import with outer class name:
-```java
-import PersonOuterClass.Person;  // Correct
-```
+### StreamObserver Lifecycle
+- **Always** call `responseObserver.onCompleted()` to signal stream end
+- For streaming: call `onNext()` multiple times, then `onCompleted()`
+- Handle errors with `onError()` instead of throwing exceptions
 
-### Gradle Wrapper
-Use `.\gradlew.bat` (Windows) not `gradle` - ensures consistent Gradle 9.2.1 usage across environments.
+### Build Dependencies
+- Proto generation runs automatically during `build` task
+- Use `.\gradlew.bat` (not `gradle`) for consistent Gradle 9.2.1
+- Client requires server running on localhost:6565
 
 ## Key Files to Reference
-- `build.gradle` - Dependency versions and protobuf plugin configuration
-- `src/main/proto/person.proto` - Example proto message definition
-- `gradle/wrapper/gradle-wrapper.properties` - Gradle version pinning
+- [grpc-server/src/main/java/com/grpc/course/ServerApplication.java](grpc-server/src/main/java/com/grpc/course/ServerApplication.java) - Server startup and service registration
+- [grpc-server/src/main/java/com/grpc/course/common/GrpcServer.java](grpc-server/src/main/java/com/grpc/course/common/GrpcServer.java) - Server configuration and lifecycle
+- [grpc-client/src/main/java/com/grpc/course/common/GrpcClient.java](grpc-client/src/main/java/com/grpc/course/common/GrpcClient.java) - Client connection management
+- [grpc-server/src/main/proto/*.proto](grpc-server/src/main/proto/) - Service definitions and message schemas
+- [build.gradle](grpc-server/build.gradle) - Protobuf plugin configuration and dependencies

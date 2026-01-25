@@ -28,6 +28,7 @@ public class GrpcClient {
     private static final Logger logger = LoggerFactory.getLogger(GrpcClient.class);
 
     private ManagedChannel channel;
+    private ManagedChannel channelAlive;
 
     public GrpcClient(String host, int port) {
         initClient(host, port);
@@ -35,6 +36,11 @@ public class GrpcClient {
 
     private void initClient(String host, int port) {
         channel = ManagedChannelBuilder
+                .forAddress(host, port)
+                .usePlaintext()
+                .build();
+
+        channelAlive = ManagedChannelBuilder
                 .forAddress(host, port)
                 .usePlaintext()
                 .keepAliveTime(10, TimeUnit.SECONDS)
@@ -52,6 +58,20 @@ public class GrpcClient {
         var accountBalance = stub.getAccountBalance(balanceRequest);
 
         logger.info("Balance Response - Account Number: {}, Balance: {}",
+                accountBalance.getAccountNumber(),
+                accountBalance.getBalance());
+    }
+
+    public void processBalanceAlive(int accountNumber) {
+        var stub = BankServiceGrpc.newBlockingStub(channelAlive);
+
+        var balanceRequest = BalanceCheckRequest.newBuilder()
+                .setAccountNumber(accountNumber)
+                .build();
+
+        var accountBalance = stub.getAccountBalance(balanceRequest);
+
+        logger.info("Balance Response (Keep-Alive) - Account Number: {}, Balance: {}",
                 accountBalance.getAccountNumber(),
                 accountBalance.getBalance());
     }

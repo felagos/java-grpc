@@ -110,6 +110,26 @@ Server automatically validates all requests via `ValidationInterceptor`.
 - **Two channels**: `channel` (standard) and `channelAlive` (with keep-alive)
 - **Configuration**: `application.properties` sets host/port (`grpc.server.port=6565`)
 
+## Streaming Architecture Details
+
+### Handler Pattern for Complex Streams
+- **TransferRequestHandler**: Implements bidirectional streaming for money transfers
+- **GuessRequestHandler**: Implements bidirectional streaming for number guessing game
+- **Pattern**: Separate handler classes implement `StreamObserver<Request>` for complex logic
+
+### Client-Side Streaming Implementation
+- **Deposit pattern**: Send account number first, then multiple money amounts
+- **Transfer pattern**: Send multiple transfer requests, collect responses
+- **CountDownLatch**: Used for coordinating async operations in client streaming
+
+## Load Balancing & Production Considerations
+
+### NGINX Configuration
+- **Session affinity required** for bidirectional streaming (`ip_hash` in upstream)
+- **Disable buffering** (`grpc_buffering off`) for real-time streaming
+- **Health checks** at `/health` endpoint
+- **Error handling**: Custom gRPC error pages (502 -> grpc-status 14)
+
 ## Common Pitfalls
 
 ### Proto Code Generation
@@ -123,6 +143,11 @@ Server automatically validates all requests via `ValidationInterceptor`.
 - For streaming: call `onNext()` multiple times, then `onCompleted()`
 - Handle errors with `onError()` instead of throwing exceptions
 
+### Bidirectional Streaming Caveats
+- **Requires session affinity** in load balancers (same client → same server instance)
+- **Thread safety**: Handler classes must be thread-safe for concurrent streams
+- **Resource cleanup**: Always implement `onError()` and `onCompleted()` properly
+
 ### Build Dependencies
 - Proto generation runs automatically during `build` task
 - Use `.\gradlew.bat` (not `gradle`) for consistent Gradle 9.2.1
@@ -132,5 +157,7 @@ Server automatically validates all requests via `ValidationInterceptor`.
 - [grpc-server/src/main/java/com/grpc/course/ServerApplication.java](grpc-server/src/main/java/com/grpc/course/ServerApplication.java) - Server startup and service registration
 - [grpc-server/src/main/java/com/grpc/course/common/GrpcServer.java](grpc-server/src/main/java/com/grpc/course/common/GrpcServer.java) - Server configuration and lifecycle
 - [grpc-client/src/main/java/com/grpc/course/common/GrpcClient.java](grpc-client/src/main/java/com/grpc/course/common/GrpcClient.java) - Client connection management
+- [grpc-server/src/main/java/com/grpc/course/interceptor/ValidationInterceptor.java](grpc-server/src/main/java/com/grpc/course/interceptor/ValidationInterceptor.java) - Request validation with buf/protovalidate
 - [grpc-server/src/main/proto/*.proto](grpc-server/src/main/proto/) - Service definitions and message schemas
+- [grpc-server/nginx.conf](grpc-server/nginx.conf) - Load balancing configuration for production
 - [build.gradle](grpc-server/build.gradle) - Protobuf plugin configuration and dependencies

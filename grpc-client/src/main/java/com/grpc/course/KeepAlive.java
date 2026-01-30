@@ -7,9 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.grpc.course.common.PropertiesHelper;
-import com.grpc.course.AccountBalance;
-import com.grpc.course.BalanceCheckRequest;
-import com.grpc.course.BankServiceGrpc;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;

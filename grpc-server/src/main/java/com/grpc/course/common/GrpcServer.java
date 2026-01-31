@@ -3,6 +3,8 @@ package com.grpc.course.common;
 import build.buf.protovalidate.Validator;
 import build.buf.protovalidate.ValidatorFactory;
 import com.grpc.course.interceptor.ValidationInterceptor;
+import com.grpc.course.interceptor.JwtAuthInterceptor;
+import com.grpc.course.services.BankService;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -43,11 +45,24 @@ public class GrpcServer {
 
             Validator validator = ValidatorFactory.newBuilder().build();
             ValidationInterceptor validationInterceptor = new ValidationInterceptor(validator);
+            JwtAuthInterceptor jwtAuthInterceptor = new JwtAuthInterceptor();
 
             services.forEach(service -> {
-                var serviceWithInterceptor = ServerInterceptors.intercept(service, validationInterceptor);
-                serverBuilder.addService(serviceWithInterceptor);
-                logger.info("Registered gRPC service: {}", service.getClass().getSimpleName());
+                if (service instanceof BankService) {
+                    var serviceWithInterceptors = ServerInterceptors.intercept(
+                        service, 
+                        jwtAuthInterceptor,   
+                        validationInterceptor
+                    );
+                    serverBuilder.addService(serviceWithInterceptors);
+                    logger.info("Registered gRPC service: {} with validation and JWT interceptors", 
+                               service.getClass().getSimpleName());
+                } else {
+                    var serviceWithValidation = ServerInterceptors.intercept(service, validationInterceptor);
+                    serverBuilder.addService(serviceWithValidation);
+                    logger.info("Registered gRPC service: {} with validation interceptor only", 
+                               service.getClass().getSimpleName());
+                }
             });
 
             server = serverBuilder.build().start();

@@ -21,6 +21,8 @@ import com.grpc.course.TransferResponse;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
+import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 
 public class GrpcClient {
@@ -213,6 +215,54 @@ public class GrpcClient {
         }
 
         return responses.iterator();
+    }
+
+    public void processWithdraw(int accountNumber, int amount) {
+        try {
+            logger.info("Processing withdraw for account {} with amount {}", accountNumber, amount);
+            var moneyIterator = withdraw(accountNumber, amount);
+            
+            while (moneyIterator.hasNext()) {
+                var money = moneyIterator.next();
+                logger.info("Received money: ${}", money.getAmount());
+            }
+            
+            logger.info("Withdraw completed successfully");
+        } catch (Exception e) {
+            logger.error("Error during withdraw: {}", e.getMessage());
+        }
+    }
+
+    public void processWithdrawWithJwt(int accountNumber, int amount, String jwtToken) {
+        try {
+            logger.info("Processing withdraw with JWT for account {} with amount {}", accountNumber, amount);
+            
+            var stub = BankServiceGrpc.newBlockingStub(channel);
+            
+            // Crear metadata con JWT token
+            Metadata metadata = new Metadata();
+            Metadata.Key<String> jwtKey = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
+            metadata.put(jwtKey, jwtToken);
+            
+            // Aplicar metadata al stub
+            var stubWithAuth = stub.withInterceptors(MetadataUtils.newAttachHeadersInterceptor(metadata));
+            
+            var request = WithdrawRequest.newBuilder()
+                    .setAccountNumber(accountNumber)
+                    .setAmount(amount)
+                    .build();
+            
+            var moneyIterator = stubWithAuth.withdraw(request);
+            
+            while (moneyIterator.hasNext()) {
+                var money = moneyIterator.next();
+                logger.info("Received money: ${}", money.getAmount());
+            }
+            
+            logger.info("JWT-authenticated withdraw completed successfully");
+        } catch (Exception e) {
+            logger.error("Error during JWT withdraw: {}", e.getMessage());
+        }
     }
 
     private StreamObserver<AccountBalance> createBalanceObserver() {

@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 description = 'gRPC Client Application'
 
 application {
-	mainClass = 'com.grpc.course.ClientApplication'
+	mainClass = 'com.grpc.course.WithdrawJwtClient'
 }
 
 java {

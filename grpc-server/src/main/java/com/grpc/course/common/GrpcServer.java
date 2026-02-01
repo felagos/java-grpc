@@ -13,7 +13,7 @@ import io.grpc.ServerInterceptors;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.grpc.netty.NettyServerBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +44,9 @@ public class GrpcServer {
                 .forPort(port)
                 .keepAliveTime(10, TimeUnit.SECONDS)
                 .keepAliveTimeout(1, TimeUnit.SECONDS)
-                .maxConnectionIdle(25, TimeUnit.SECONDS)
-                .sslContext(certsHelper.serverSslContext());
+                .maxConnectionIdle(25, TimeUnit.SECONDS);
+                // SSL disabled for Docker deployment - NGINX handles TLS termination
+                // To enable SSL: .sslContext(certsHelper.serverSslContext())
 
             Validator validator = ValidatorFactory.newBuilder().build();
             ValidationInterceptor validationInterceptor = new ValidationInterceptor(validator);

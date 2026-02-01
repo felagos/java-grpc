@@ -3,6 +3,7 @@ package com.grpc.course.interceptor;
 import io.grpc.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.grpc.course.common.GrpcContextKeys;
 
 public class JwtAuthInterceptor implements ServerInterceptor {
 
@@ -53,7 +54,11 @@ public class JwtAuthInterceptor implements ServerInterceptor {
                 };
             }
 
-            logger.info("JWT validation successful for withdraw request");
+            String username = extractUsernameFromJwt(jwt);
+            logger.info("JWT validation successful for withdraw request. User: {}", username);
+            
+            Context context = Context.current().withValue(GrpcContextKeys.USER_CONTEXT_KEY, username);
+            return Contexts.interceptCall(context, call, headers, next);
         } else {
             logger.debug("Skipping JWT validation for method: {}", methodName);
         }
@@ -72,5 +77,16 @@ public class JwtAuthInterceptor implements ServerInterceptor {
                 jwt.length() > 10 ? jwt.substring(0, 10) + "..." : jwt);
 
         return isValid;
+    }
+
+    private String extractUsernameFromJwt(String jwt) {
+        // En un caso real, aquí se decodificaría el JWT y se extraería el claim del usuario
+        // Por simplicidad, extraemos el usuario del token (formato: "valid-username")
+        if (jwt != null && jwt.contains("-")) {
+            String username = jwt.substring(jwt.indexOf("-") + 1);
+            logger.debug("Extracted username: {} from JWT", username);
+            return username;
+        }
+        return "unknown";
     }
 }

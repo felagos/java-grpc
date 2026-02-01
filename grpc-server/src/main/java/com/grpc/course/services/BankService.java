@@ -12,7 +12,9 @@ import com.grpc.course.BankServiceGrpc;
 import com.grpc.course.DepositRequest;
 import com.grpc.course.Money;
 import com.grpc.course.WithdrawRequest;
+import com.grpc.course.common.GrpcContextKeys;
 import com.grpc.course.repository.AccountRepository;
+import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 
 public class BankService extends BankServiceGrpc.BankServiceImplBase {
@@ -69,7 +71,10 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
 
     @Override
     public void withdraw(WithdrawRequest request, StreamObserver<Money> responseObserver) {
+        String username = GrpcContextKeys.USER_CONTEXT_KEY.get(Context.current());
+        
         logger.info("===== WITHDRAW METHOD CALLED =====");
+        logger.info("User: {} is requesting withdrawal", username != null ? username : "anonymous");
         logger.info("Received withdraw request for account number: {} with amount: {}", request.getAccountNumber(),
                 request.getAmount());
 

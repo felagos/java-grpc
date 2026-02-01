@@ -10,6 +10,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +20,9 @@ import org.slf4j.LoggerFactory;
 public class GrpcServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcServer.class);
+
+    private final Path KEY_STORE_PATH = CertsHelper.KEY_STORE_PATH;
+    private final Path TRUST_STORE_PATH = CertsHelper.TRUST_STORE_PATH;
 
     private Server server;
     private Thread serverThread;

@@ -1,4 +1,4 @@
-.PHONY: generate-protos force-dependencies server-run server-stop server-rebuild server-logs help
+.PHONY: generate-protos force-dependencies certs-generate server-run server-stop server-rebuild server-logs help
 
 # Detectar el sistema operativo
 UNAME_S := $(shell uname -s 2>/dev/null)
@@ -23,6 +23,7 @@ help:
 	@echo "Available commands:"
 	@echo "  make generate-protos   - Generate proto files in both grpc-client and grpc-server"
 	@echo "  make force-dependencies - Force refresh dependencies and build both modules"
+	@echo "  make certs-generate    - Generate SSL/TLS certificates for gRPC"
 	@echo "  make server-run        - Start the gRPC server with Docker Compose"
 	@echo "  make server-stop       - Stop the gRPC server (Docker Compose)"
 	@echo "  make server-rebuild    - Rebuild and restart the gRPC server image"
@@ -41,6 +42,15 @@ force-dependencies:
 	@echo "Forcing dependencies refresh and building grpc-server..."
 	cd grpc-server && $(GRADLEW) clean build --refresh-dependencies
 	@echo "Dependencies forced and build completed for both modules!"
+certs-generate:
+	@echo "Generating SSL/TLS certificates..."
+ifeq ($(DETECTED_OS),Windows)
+	cd grpc-server && generate-certs.bat
+else
+	cd grpc-server && chmod +x generate-certs.sh && ./generate-certs.sh
+endif
+	@echo "Certificates generated successfully!"
+
 
 server-run:
 	@echo "Starting gRPC server with Docker Compose..."

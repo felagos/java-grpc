@@ -1,6 +1,6 @@
 package com.grpc.course.helpers;
 
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.security.KeyStore;
 import java.util.concurrent.Callable;
 import javax.net.ssl.KeyManagerFactory;
@@ -13,8 +13,8 @@ public class CertsHelper {
 
     private static CertsHelper INSTANCE = null;
 
-    private Path KEY_STORE_PATH = Path.of("src/main/resources/keystore.jks");
-    private Path TRUST_STORE_PATH = Path.of("src/main/resources/truststore.jks");
+    private String KEY_STORE_NAME = "keystore.jks";
+    private String TRUST_STORE_NAME = "truststore.jks";
     private char[] PASSWORD = "changeit".toCharArray();
 
     private CertsHelper() {
@@ -30,7 +30,14 @@ public class CertsHelper {
     public KeyManagerFactory getKeyManagerFactory() throws Exception {
         return handleException(() -> {
             var kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            var keyStore = KeyStore.getInstance(KEY_STORE_PATH.toFile(), PASSWORD);
+            var keyStore = KeyStore.getInstance("JKS");
+            
+            try (InputStream ksStream = getClass().getClassLoader().getResourceAsStream(KEY_STORE_NAME)) {
+                if (ksStream == null) {
+                    throw new Exception("Keystore file not found in classpath: " + KEY_STORE_NAME);
+                }
+                keyStore.load(ksStream, PASSWORD);
+            }
 
             kmf.init(keyStore, PASSWORD);
 
@@ -41,7 +48,14 @@ public class CertsHelper {
     public TrustManagerFactory getTrustManagerFactory() throws Exception {
         return handleException(() -> {
             var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            var trustStore = KeyStore.getInstance(TRUST_STORE_PATH.toFile(), PASSWORD);
+            var trustStore = KeyStore.getInstance("JKS");
+            
+            try (InputStream tsStream = getClass().getClassLoader().getResourceAsStream(TRUST_STORE_NAME)) {
+                if (tsStream == null) {
+                    throw new Exception("Truststore file not found in classpath: " + TRUST_STORE_NAME);
+                }
+                trustStore.load(tsStream, PASSWORD);
+            }
 
             tmf.init(trustStore);
 
@@ -73,14 +87,6 @@ public class CertsHelper {
         } catch (Exception e) {
             throw new Exception("Error initializing KeyManagerFactory", e);
         }
-    }
-
-    public Path getKeyPath() {
-        return KEY_STORE_PATH;
-    }
-
-    public Path getTrustPath() {
-        return TRUST_STORE_PATH;
     }
 
 }

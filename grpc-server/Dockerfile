@@ -3,21 +3,22 @@ FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /app
 
-# Copy Gradle wrapper and configuration files
+# Copy root level gradle files and settings
+COPY settings.gradle .
+COPY gradle gradle
 COPY gradlew .
 COPY gradlew.bat .
-COPY gradle gradle
-COPY settings.gradle .
-COPY build.gradle .
+
+# Copy all module directories
+COPY grpc-shared grpc-shared
+COPY grpc-server grpc-server
+COPY grpc-client grpc-client
 
 # Fix line endings and make gradlew executable
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
-# Copy source code and proto files
-COPY src src
-
-# Build the application (generates protos and compiles Java)
-RUN ./gradlew clean build -x test --no-daemon
+# Build grpc-server (generates protos and compiles Java)
+RUN ./gradlew -p grpc-server clean build -x test --no-daemon
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre
@@ -25,7 +26,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy only the built artifacts from builder stage
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder /app/grpc-server/build/libs/*.jar app.jar
 
 # Expose gRPC port
 EXPOSE 6565

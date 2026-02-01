@@ -32,6 +32,8 @@ ext {
 }
 
 dependencies {
+	implementation project(':grpc-shared')
+	
 	implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 	implementation "io.grpc:grpc-protobuf:${grpcVersion}"
 	implementation "io.grpc:grpc-stub:${grpcVersion}"
@@ -46,6 +48,8 @@ dependencies {
 	implementation 'ch.qos.logback:logback-classic:1.5.15'
 
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+
+	implementation 'io.netty:netty-handler:4.1.118.Final'
 }
 
 protobuf {

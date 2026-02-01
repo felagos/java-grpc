@@ -3,8 +3,8 @@ version: '3.8'
 services:
   grpc-primary-server:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: grpc-server/Dockerfile
     image: grpc-server:1
     container_name: grpc-server-1
     environment:
@@ -21,8 +21,8 @@ services:
 
   grpc-secondary-server:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: grpc-server/Dockerfile
     image: grpc-server:2
     container_name: grpc-server-2
     environment:
@@ -39,8 +39,8 @@ services:
 
   grpc-tertiary-server:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: grpc-server/Dockerfile
     image: grpc-server:3
     container_name: grpc-server-3
     environment:

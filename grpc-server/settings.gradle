@@ -1,1 +1,3 @@
 rootProject.name = 'grpc-server'
+include 'grpc-shared'
+project(':grpc-shared').projectDir = new File(rootDir, '../grpc-shared')

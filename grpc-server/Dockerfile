@@ -18,7 +18,7 @@ COPY grpc-client grpc-client
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 
 # Build grpc-server (generates protos and compiles Java)
-RUN ./gradlew -p grpc-server clean build -x test --no-daemon
+RUN ./gradlew :grpc-shared:build :grpc-server:build -x test --no-daemon
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre

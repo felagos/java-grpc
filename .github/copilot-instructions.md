@@ -11,9 +11,10 @@ Multi-module Java gRPC application showcasing different streaming patterns (unar
 - **Shared proto files**: Service definitions synchronized between modules
 
 ### Generated Code Structure
-- **Proto files**: `src/main/proto/*.proto` - Define message schemas and gRPC services
+- **Proto files**: `grpc-shared/src/main/proto/*.proto` - Centralized proto definitions (account-balance, bank-service, guess-number, transfer-service)
 - **Generated Java**: `build/generated/source/proto/main/java/` - Auto-generated from proto files (NEVER EDIT)
 - **Package mapping**: Proto messages generate into `com.grpc.course` package
+- **Proto compilation**: `grpc-shared` module compiles protos, both client/server depend on it
 
 ### Core Dependencies
 - **gRPC**: v1.74.0 (netty-shaded, protobuf, stub)
@@ -91,7 +92,12 @@ message WithdrawRequest {
     int32 amount = 2 [(buf.validate.field).int32 = {gt: 0}];
 }
 ```
-Server automatically validates all requests via `ValidationInterceptor`.
+Server automatically validates all requests via `ValidationInterceptor`. Additionally, `JwtAuthInterceptor` secures sensitive operations (Withdraw methods) with Bearer token validation.
+
+### Interceptor Chain
+- **ValidationInterceptor**: Applies buf/validate constraints to all requests
+- **JwtAuthInterceptor**: Required for BankService withdraw operations; validates `Authorization: Bearer <token>` header
+- **Chain order**: JwtAuthInterceptor → ValidationInterceptor (auth first, then validation)
 
 ## Critical Implementation Details
 
@@ -158,6 +164,7 @@ Server automatically validates all requests via `ValidationInterceptor`.
 - [grpc-server/src/main/java/com/grpc/course/common/GrpcServer.java](grpc-server/src/main/java/com/grpc/course/common/GrpcServer.java) - Server configuration and lifecycle
 - [grpc-client/src/main/java/com/grpc/course/common/GrpcClient.java](grpc-client/src/main/java/com/grpc/course/common/GrpcClient.java) - Client connection management
 - [grpc-server/src/main/java/com/grpc/course/interceptor/ValidationInterceptor.java](grpc-server/src/main/java/com/grpc/course/interceptor/ValidationInterceptor.java) - Request validation with buf/protovalidate
-- [grpc-server/src/main/proto/*.proto](grpc-server/src/main/proto/) - Service definitions and message schemas
+- [grpc-server/src/main/java/com/grpc/course/interceptor/JwtAuthInterceptor.java](grpc-server/src/main/java/com/grpc/course/interceptor/JwtAuthInterceptor.java) - Bearer token validation for withdraw operations
+- [grpc-shared/src/main/proto/*.proto](grpc-shared/src/main/proto/) - Service definitions and message schemas
 - [grpc-server/nginx.conf](grpc-server/nginx.conf) - Load balancing configuration for production
-- [build.gradle](grpc-server/build.gradle) - Protobuf plugin configuration and dependencies
+- [grpc-server/build.gradle](grpc-server/build.gradle) - Protobuf plugin configuration and dependencies

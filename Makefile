@@ -29,18 +29,14 @@ help:
 	@echo "  make server-logs       - View server logs"
 
 generate-protos:
-	@echo "Generating protos in grpc-client..."
-	cd grpc-client && $(GRADLEW) generateProto
-	@echo "Generating protos in grpc-server..."
-	cd grpc-server && $(GRADLEW) generateProto
+	@echo "Generating protos in grpc-shared (after refactoring to centralize protos)..."
+	$(GRADLEW) :grpc-shared:generateProto
 	@echo "Proto generation completed!"
 
 force-dependencies:
-	@echo "Forcing dependencies refresh and building grpc-client..."
-	cd grpc-client && $(GRADLEW) clean build --refresh-dependencies
-	@echo "Forcing dependencies refresh and building grpc-server..."
-	cd grpc-server && $(GRADLEW) clean build --refresh-dependencies
-	@echo "Dependencies forced and build completed for both modules!"
+	@echo "Forcing dependencies refresh and building all modules..."
+	$(GRADLEW) clean build --refresh-dependencies
+	@echo "Dependencies forced and build completed for all modules!"
 
 server-run:
 	@echo "Starting gRPC server with Docker Compose..."

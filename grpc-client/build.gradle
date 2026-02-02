@@ -1,7 +1,6 @@
 plugins {
 	id 'java'
 	id 'application'
-	id 'com.google.protobuf' version '0.9.4'
 }
 
 group = 'com.grpc'
@@ -31,6 +30,8 @@ ext {
 
 dependencies {
 	
+	implementation project(':grpc-shared')
+
 	implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 	implementation "io.grpc:grpc-protobuf:${grpcVersion}"
 	implementation "io.grpc:grpc-stub:${grpcVersion}"
@@ -46,48 +47,6 @@ dependencies {
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 	
 	implementation 'com.google.guava:guava:33.4.0-jre'
-}
-
-protobuf {
-	protoc {
-		artifact = "com.google.protobuf:protoc:${protocVersion}"
-	}
-	plugins {
-		grpc {
-			artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
-		}
-		javapgv {
-			artifact = "build.buf.protoc-gen-validate:protoc-gen-validate:${pgvVersion}"
-		}
-	}
-	generateProtoTasks {
-		all()*.plugins {
-			grpc {}
-			javapgv {
-				option "lang=java"
-			}
-		}
-		all().each { task ->
-			task.builtins {
-				java {
-					option 'annotate_code=false'
-				}
-			}
-			task.plugins {
-				grpc {
-					option 'annotate_code=false'
-				}
-			}
-		}
-	}
-}
-
-sourceSets {
-	main {
-		proto {
-			srcDir 'src/main/proto'
-		}
-	}
 }
 
 processResources {

@@ -31,7 +31,7 @@ if exist "%CERTS_DIR%\truststore.jks" del /F /Q "%CERTS_DIR%\truststore.jks"
 if exist "%CERTS_DIR%\server.crt" del /F /Q "%CERTS_DIR%\server.crt"
 
 echo.
-echo 1. Generando keystore del servidor...
+echo 1. Generando keystore del servidor con SANs...
 %KEYTOOL% -genkeypair ^
   -alias server ^
   -keyalg RSA ^
@@ -40,7 +40,8 @@ echo 1. Generando keystore del servidor...
   -keystore "%CERTS_DIR%\keystore.jks" ^
   -storepass %PASSWORD% ^
   -keypass %PASSWORD% ^
-  -dname "CN=localhost,OU=Development,O=gRPC Course,L=City,ST=State,C=US"
+  -dname "CN=localhost,OU=Development,O=gRPC Course,L=City,ST=State,C=US" ^
+  -ext "SAN=DNS:localhost,IP:127.0.0.1"
 
 if errorlevel 1 (
     echo Error generando keystore

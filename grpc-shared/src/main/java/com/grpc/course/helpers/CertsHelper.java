@@ -5,10 +5,13 @@ import java.security.KeyStore;
 import java.util.concurrent.Callable;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.grpc.netty.GrpcSslContexts;
 
+/**
+ * CertsHelper - DEPRECATED: SSL/TLS is no longer used in this project.
+ * This class is kept for backward compatibility only.
+ * All gRPC communication now uses plaintext.
+ */
+@Deprecated
 public class CertsHelper {
 
     private static CertsHelper INSTANCE = null;
@@ -27,66 +30,24 @@ public class CertsHelper {
         return INSTANCE;
     }
 
+    @Deprecated
     public KeyManagerFactory getKeyManagerFactory() throws Exception {
-        return handleException(() -> {
-            var kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            var keyStore = KeyStore.getInstance("JKS");
-            
-            try (InputStream ksStream = getClass().getClassLoader().getResourceAsStream(KEY_STORE_NAME)) {
-                if (ksStream == null) {
-                    throw new Exception("Keystore file not found in classpath: " + KEY_STORE_NAME);
-                }
-                keyStore.load(ksStream, PASSWORD);
-            }
-
-            kmf.init(keyStore, PASSWORD);
-
-            return kmf;
-        });
+        throw new UnsupportedOperationException("SSL/TLS is no longer used. Use plaintext gRPC communication instead.");
     }
 
+    @Deprecated
     public TrustManagerFactory getTrustManagerFactory() throws Exception {
-        return handleException(() -> {
-            var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            var trustStore = KeyStore.getInstance("JKS");
-            
-            try (InputStream tsStream = getClass().getClassLoader().getResourceAsStream(TRUST_STORE_NAME)) {
-                if (tsStream == null) {
-                    throw new Exception("Truststore file not found in classpath: " + TRUST_STORE_NAME);
-                }
-                trustStore.load(tsStream, PASSWORD);
-            }
-
-            tmf.init(trustStore);
-
-            return tmf;
-        });
+        throw new UnsupportedOperationException("SSL/TLS is no longer used. Use plaintext gRPC communication instead.");
     }
 
-    public SslContext serverSslContext() throws Exception {
-        return handleException(() -> {
-            var kmf = getKeyManagerFactory();
-            var sslBuilder = SslContextBuilder.forServer(kmf);
-
-            return GrpcSslContexts.configure(sslBuilder).build();
-        });
+    @Deprecated
+    public Object serverSslContext() throws Exception {
+        throw new UnsupportedOperationException("SSL/TLS is no longer used. Use plaintext gRPC communication instead.");
     }
 
-    public SslContext clientSslContext() throws Exception {
-        return handleException(() -> {
-            var tmf = getTrustManagerFactory();
-            var sslBuilder = SslContextBuilder.forClient().trustManager(tmf);
-
-            return GrpcSslContexts.configure(sslBuilder).build();
-        });
-    }
-
-    private <T> T handleException(Callable<T> callable) throws Exception {
-        try {
-            return callable.call();
-        } catch (Exception e) {
-            throw new Exception("Error initializing KeyManagerFactory", e);
-        }
+    @Deprecated
+    public Object clientSslContext() throws Exception {
+        throw new UnsupportedOperationException("SSL/TLS is no longer used. Use plaintext gRPC communication instead.");
     }
 
 }

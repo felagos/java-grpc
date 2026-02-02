@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 description = 'gRPC Client Application'
 
 application {
-	mainClass = 'com.grpc.course.WithdrawJwtClient'
+	mainClass = 'com.grpc.course.UnaryClient'
 }
 
 java {
@@ -30,7 +30,6 @@ ext {
 }
 
 dependencies {
-	implementation project(':grpc-shared')
 	
 	implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 	implementation "io.grpc:grpc-protobuf:${grpcVersion}"

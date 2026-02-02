@@ -12,14 +12,15 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    grpcVersion = '1.74.0'
+}
+
 dependencies {
     // Logging
-    implementation 'org.slf4j:slf4j-api:2.0.7'
-    implementation 'ch.qos.logback:logback-classic:1.4.8'
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    implementation 'ch.qos.logback:logback-classic:1.5.15'
     
-    // Netty for SSL
-    implementation 'io.netty:netty-handler:4.1.118.Final'
-
-    // gRPC for SSL contexts
-    implementation 'io.grpc:grpc-netty:1.60.1'
+    // gRPC
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 }

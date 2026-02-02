@@ -2,26 +2,22 @@ package com.grpc.course.common;
 
 import build.buf.protovalidate.Validator;
 import build.buf.protovalidate.ValidatorFactory;
-import com.grpc.course.helpers.CertsHelper;
 import com.grpc.course.interceptor.ValidationInterceptor;
 import com.grpc.course.interceptor.JwtAuthInterceptor;
 import com.grpc.course.services.BankService;
 import io.grpc.BindableService;
 import io.grpc.Server;
+import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GrpcServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcServer.class);
-
-    private final CertsHelper certsHelper = CertsHelper.getInstance();
 
     private Server server;
     private Thread serverThread;
@@ -40,13 +36,11 @@ public class GrpcServer {
         }
 
         try {
-            var serverBuilder = NettyServerBuilder
+            var serverBuilder = ServerBuilder
                 .forPort(port)
                 .keepAliveTime(10, TimeUnit.SECONDS)
                 .keepAliveTimeout(1, TimeUnit.SECONDS)
                 .maxConnectionIdle(25, TimeUnit.SECONDS);
-                // SSL disabled for Docker deployment - NGINX handles TLS termination
-                // To enable SSL: .sslContext(certsHelper.serverSslContext())
 
             Validator validator = ValidatorFactory.newBuilder().build();
             ValidationInterceptor validationInterceptor = new ValidationInterceptor(validator);

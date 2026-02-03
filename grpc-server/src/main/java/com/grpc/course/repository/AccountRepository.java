@@ -3,7 +3,9 @@ package com.grpc.course.repository;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class AccountRepository {
 
     private final Map<Integer, Integer> accountData = new HashMap<>(Map.of(

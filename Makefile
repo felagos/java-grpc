@@ -1,4 +1,4 @@
-.PHONY: generate-protos force-dependencies certs-generate server-run server-stop server-rebuild server-logs help
+.PHONY: generate-protos force-dependencies server-build server-bootRun server-run server-stop server-rebuild server-logs help
 
 # Detectar el sistema operativo
 UNAME_S := $(shell uname -s 2>/dev/null)
@@ -21,12 +21,14 @@ endif
 
 help:
 	@echo "Available commands:"
-	@echo "  make generate-protos   - Generate proto files in both grpc-client and grpc-server"
-	@echo "  make force-dependencies - Force refresh dependencies and build both modules"
-	@echo "  make server-run        - Start the gRPC server with Docker Compose"
-	@echo "  make server-stop       - Stop the gRPC server (Docker Compose)"
-	@echo "  make server-rebuild    - Rebuild and restart the gRPC server image"
-	@echo "  make server-logs       - View server logs"
+	@echo "  make generate-protos    - Generate proto files from grpc-shared module"
+	@echo "  make force-dependencies - Force refresh dependencies and build all modules"
+	@echo "  make server-build       - Build gRPC server module only"
+	@echo "  make server-bootRun     - Run gRPC Spring Boot server locally (port 6565)"
+	@echo "  make server-run         - Start gRPC server with Docker Compose"
+	@echo "  make server-stop        - Stop gRPC server (Docker Compose)"
+	@echo "  make server-rebuild     - Rebuild and restart gRPC server image"
+	@echo "  make server-logs        - View server logs"
 
 generate-protos:
 	@echo "Generating protos in grpc-shared (after refactoring to centralize protos)..."
@@ -37,6 +39,16 @@ force-dependencies:
 	@echo "Forcing dependencies refresh and building all modules..."
 	$(GRADLEW) clean build --refresh-dependencies
 	@echo "Dependencies forced and build completed for all modules!"
+
+server-build:
+	@echo "Building gRPC Spring Boot server module..."
+	$(GRADLEW) :grpc-server:clean :grpc-server:build
+	@echo "Server build completed!"
+
+server-bootRun:
+	@echo "Starting gRPC Spring Boot server locally on port 6565..."
+	@echo "Press Ctrl+C to stop the server"
+	$(GRADLEW) :grpc-server:bootRun
 
 server-run:
 	@echo "Starting gRPC server with Docker Compose..."

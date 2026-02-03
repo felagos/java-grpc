@@ -1,5 +1,6 @@
 package com.grpc.course.services;
 
+import org.springframework.grpc.server.service.GrpcService;
 import com.grpc.course.TransferRequest;
 import com.grpc.course.TransferResponse;
 import com.grpc.course.TransferServiceGrpc;
@@ -8,6 +9,7 @@ import com.grpc.course.repository.AccountRepository;
 
 import io.grpc.stub.StreamObserver;
 
+@GrpcService
 public class TransferService extends TransferServiceGrpc.TransferServiceImplBase {
 
     private final AccountRepository accountRepository;

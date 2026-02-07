@@ -14,6 +14,7 @@ import com.grpc.course.DepositRequest;
 import com.grpc.course.Money;
 import com.grpc.course.WithdrawRequest;
 import com.grpc.course.common.GrpcContextKeys;
+import com.grpc.course.exception.RequestValidationException;
 import com.grpc.course.repository.AccountRepository;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
@@ -134,7 +135,7 @@ public class BankService extends BankServiceGrpc.BankServiceImplBase {
                     }
                     default -> {
                         logger.error("Received unknown request type in deposit for account number: {}", accountNumber);
-                        throw new IllegalArgumentException("Unexpected value: " + request.getRequestCase());
+                        throw new RequestValidationException("Unexpected value: " + request.getRequestCase());
                     }
                 }
             }

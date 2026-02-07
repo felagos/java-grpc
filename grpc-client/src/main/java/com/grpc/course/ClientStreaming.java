@@ -1,14 +1,16 @@
 package com.grpc.course;
 
-import com.grpc.course.annotation.GrpcClient;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CountDownLatch;
 
 @Component
+@Lazy
 public class ClientStreaming {
     private static final Logger logger = LoggerFactory.getLogger(ClientStreaming.class);
 
@@ -24,9 +26,9 @@ public class ClientStreaming {
         logger.info("=== Client Streaming RPC ===");
         CountDownLatch latch = new CountDownLatch(1);
 
-        StreamObserver<com.grpc.course.AccountBalance> responseObserver = new StreamObserver<com.grpc.course.AccountBalance>() {
+        StreamObserver<AccountBalance> responseObserver = new StreamObserver<AccountBalance>() {
             @Override
-            public void onNext(com.grpc.course.AccountBalance value) {
+            public void onNext(AccountBalance value) {
                 logger.info("Deposit Response - New Balance: ${}", value.getBalance());
             }
 

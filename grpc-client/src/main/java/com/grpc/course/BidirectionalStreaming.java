@@ -1,14 +1,16 @@
 package com.grpc.course;
 
-import com.grpc.course.annotation.GrpcClient;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CountDownLatch;
 
 @Component
+@Lazy
 public class BidirectionalStreaming {
     private static final Logger logger = LoggerFactory.getLogger(BidirectionalStreaming.class);
 
@@ -24,9 +26,9 @@ public class BidirectionalStreaming {
         logger.info("=== Bidirectional Streaming RPC ===");
         CountDownLatch latch = new CountDownLatch(1);
 
-        StreamObserver<com.grpc.course.TransferResponse> responseObserver = new StreamObserver<com.grpc.course.TransferResponse>() {
+        StreamObserver<TransferResponse> responseObserver = new StreamObserver<TransferResponse>() {
             @Override
-            public void onNext(com.grpc.course.TransferResponse value) {
+            public void onNext(TransferResponse value) {
                 logger.info("Transfer Response - Status: {}, From Transfer Balance: ${}, To Transfer Balance: ${}",
                         value.getStatus(),
                         value.getFromAccount().getBalance(),

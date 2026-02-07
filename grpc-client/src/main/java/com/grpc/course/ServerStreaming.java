@@ -1,12 +1,14 @@
 package com.grpc.course;
 
-import com.grpc.course.annotation.GrpcClient;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
+@Lazy
 public class ServerStreaming {
     private static final Logger logger = LoggerFactory.getLogger(ServerStreaming.class);
 

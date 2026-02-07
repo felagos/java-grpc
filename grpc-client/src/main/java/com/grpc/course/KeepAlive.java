@@ -1,16 +1,18 @@
 package com.grpc.course;
 
-import com.grpc.course.annotation.GrpcClient;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
+@Lazy
 public class KeepAlive {
     private static final Logger logger = LoggerFactory.getLogger(KeepAlive.class);
 
-    @GrpcClient(value = "bank-service", keepAlive = true)
+    @GrpcClient("bank-service")
     private BankServiceGrpc.BankServiceBlockingStub blockingStubAlive;
 
     public void run() {

@@ -1,9 +1,10 @@
 package com.grpc.course;
 
-import com.grpc.course.annotation.GrpcClient;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Scanner;
@@ -11,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
+@Lazy
 public class GuessNumberGame {
     private static final Logger logger = LoggerFactory.getLogger(GuessNumberGame.class);
 
@@ -31,9 +33,9 @@ public class GuessNumberGame {
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        StreamObserver<com.grpc.course.GuessResponse> responseObserver = new StreamObserver<com.grpc.course.GuessResponse>() {
+        StreamObserver<GuessResponse> responseObserver = new StreamObserver<GuessResponse>() {
             @Override
-            public void onNext(com.grpc.course.GuessResponse value) {
+            public void onNext(GuessResponse value) {
                 logger.info("Attempt: {}, Result: {}", value.getAttempt(), value.getResult());
 
                 if (value.getResult().name().equals("CORRECT")) {

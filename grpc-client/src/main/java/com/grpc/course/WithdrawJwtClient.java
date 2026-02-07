@@ -1,14 +1,16 @@
 package com.grpc.course;
 
-import com.grpc.course.annotation.GrpcClient;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.MetadataUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 
 @Component
+@Lazy
 public class WithdrawJwtClient {
     private static final Logger logger = LoggerFactory.getLogger(WithdrawJwtClient.class);
 

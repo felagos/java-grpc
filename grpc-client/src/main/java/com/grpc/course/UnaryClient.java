@@ -1,12 +1,15 @@
 package com.grpc.course;
 
-import com.grpc.course.annotation.GrpcClient;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
+@Lazy
 public class UnaryClient {
     private static final Logger logger = LoggerFactory.getLogger(UnaryClient.class);
 
@@ -43,9 +46,9 @@ public class UnaryClient {
                 .setAccountNumber(2)
                 .build();
 
-        asyncStub.getAccountBalance(request, new io.grpc.stub.StreamObserver<com.grpc.course.AccountBalance>() {
+        asyncStub.getAccountBalance(request, new StreamObserver<AccountBalance>() {
             @Override
-            public void onNext(com.grpc.course.AccountBalance value) {
+            public void onNext(AccountBalance value) {
                 logger.info("Balance for Account 2: ${}", value.getBalance());
             }
 

@@ -1,4 +1,4 @@
-.PHONY: generate-protos force-dependencies server-build server-bootRun server-run server-stop server-rebuild server-logs help
+.PHONY: generate-protos force-dependencies server-build server-bootRun server-run server-stop server-rebuild server-logs client-run help
 
 # Detectar el sistema operativo
 UNAME_S := $(shell uname -s 2>/dev/null)
@@ -29,6 +29,8 @@ help:
 	@echo "  make server-stop        - Stop gRPC server (Docker Compose)"
 	@echo "  make server-rebuild     - Rebuild and restart gRPC server image"
 	@echo "  make server-logs        - View server logs"
+	@echo "  make client-run ARGS=<type> - Run gRPC client with specified type"
+	@echo "    Types: UnaryClient, ServerStreaming, ClientStreaming, BidirectionalStreaming, WithdrawJWT, KeepAlive, GuessNumber"
 
 generate-protos:
 	@echo "Generating protos in grpc-shared (after refactoring to centralize protos)..."
@@ -68,3 +70,7 @@ server-rebuild:
 server-logs:
 	@echo "Viewing server logs..."
 	cd grpc-server && docker-compose logs -f
+
+client-run:
+	@echo "Running gRPC client with type: $(ARGS)..."
+	$(GRADLEW) :grpc-client:run --args="$(ARGS)"

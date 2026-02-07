@@ -1,8 +1,6 @@
 package com.grpc.course;
 
 import com.grpc.course.annotation.GrpcClient;
-import com.grpc.course.BankServiceGrpc;
-import com.grpc.course.WithdrawRequest;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

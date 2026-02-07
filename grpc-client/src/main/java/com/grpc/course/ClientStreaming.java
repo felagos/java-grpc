@@ -1,35 +1,67 @@
 package com.grpc.course;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
+import com.grpc.course.annotation.GrpcClient;
+import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import com.grpc.course.common.GrpcClient;
-import com.grpc.course.common.PropertiesHelper;
-import com.google.common.util.concurrent.Uninterruptibles;
+import java.util.concurrent.CountDownLatch;
 
+@Component
 public class ClientStreaming {
-
     private static final Logger logger = LoggerFactory.getLogger(ClientStreaming.class);
 
-    public static void main(String[] args) {
-        var accountNumber = 1;
+    @GrpcClient("bank-service")
+    private BankServiceGrpc.BankServiceStub asyncStub;
 
-        logger.info("Initiating deposit request for account: {}", accountNumber);
+    public void run() {
+        logger.info("Starting Client Streaming Client...");
+        deposit();
+    }
 
-        Map<String, String> config = PropertiesHelper.loadPropertiesFromFile();
+    private void deposit() {
+        logger.info("=== Client Streaming RPC ===");
+        CountDownLatch latch = new CountDownLatch(1);
 
-        String host = config.getOrDefault("host", "localhost");
-        int port = Integer.parseInt(config.getOrDefault("grpc.server.port", "6565"));
+        StreamObserver<com.grpc.course.AccountBalance> responseObserver = new StreamObserver<com.grpc.course.AccountBalance>() {
+            @Override
+            public void onNext(com.grpc.course.AccountBalance value) {
+                logger.info("Deposit Response - New Balance: ${}", value.getBalance());
+            }
 
-        var client = new GrpcClient(host, port);
+            @Override
+            public void onError(Throwable t) {
+                logger.error("Error: {}", t.getMessage());
+                latch.countDown();
+            }
 
-        client.deposit(accountNumber, 10, 20, 30, 40, 50);
+            @Override
+            public void onCompleted() {
+                logger.info("Deposits completed");
+                latch.countDown();
+            }
+        };
 
-        Uninterruptibles.sleepUninterruptibly(3, TimeUnit.SECONDS);
+        StreamObserver<DepositRequest> requestObserver = asyncStub.deposit(responseObserver);
 
-        logger.info("Deposit process finished");
+        try {
+            requestObserver.onNext(DepositRequest.newBuilder()
+                    .setAccountNumber(1)
+                    .build());
+
+            requestObserver.onNext(DepositRequest.newBuilder()
+                    .setMoney(Money.newBuilder().setAmount(50).build())
+                    .build());
+
+            requestObserver.onNext(DepositRequest.newBuilder()
+                    .setMoney(Money.newBuilder().setAmount(75).build())
+                    .build());
+
+            requestObserver.onCompleted();
+            latch.await();
+        } catch (Exception e) {
+            logger.error("Error during deposit: {}", e.getMessage());
+        }
     }
 }

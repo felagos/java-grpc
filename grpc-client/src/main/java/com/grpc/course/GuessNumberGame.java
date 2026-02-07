@@ -1,141 +1,98 @@
 package com.grpc.course;
 
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.grpc.course.annotation.GrpcClient;
+import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import com.grpc.course.common.PropertiesHelper;
+import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
-
+@Component
 public class GuessNumberGame {
-
     private static final Logger logger = LoggerFactory.getLogger(GuessNumberGame.class);
 
-    public static void main(String[] args) {
-        Map<String, String> config = PropertiesHelper.loadPropertiesFromFile();
+    @GrpcClient("guess-number")
+    private GuessNumberGrpc.GuessNumberStub asyncStub;
 
-        String host = config.getOrDefault("host", "localhost");
-        int port = Integer.parseInt(config.getOrDefault("grpc.server.port", "6565"));
+    private AtomicInteger lowerBound = new AtomicInteger(0);
+    private AtomicInteger upperBound = new AtomicInteger(100);
 
-        ManagedChannel channel = ManagedChannelBuilder
-                .forAddress(host, port)
-                .usePlaintext()
-                .build();
+    public void run() {
+        logger.info("Starting Guess Number Game Client...");
+        playGame();
+    }
 
-        var stub = GuessNumberGrpc.newStub(channel);
+    private void playGame() {
+        logger.info("=== Number Guessing Game ===");
+        logger.info("Think of a number between 0 and 100!");
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        // Binary search bounds using atomic integers for thread-safe updates
-        AtomicInteger low = new AtomicInteger(1);
-        AtomicInteger high = new AtomicInteger(100);
-        AtomicInteger lastGuess = new AtomicInteger(0);
+        StreamObserver<com.grpc.course.GuessResponse> responseObserver = new StreamObserver<com.grpc.course.GuessResponse>() {
+            @Override
+            public void onNext(com.grpc.course.GuessResponse value) {
+                logger.info("Attempt: {}, Result: {}", value.getAttempt(), value.getResult());
+
+                if (value.getResult().name().equals("CORRECT")) {
+                    latch.countDown();
+                } else if (value.getResult().name().equals("TOO_HIGH")) {
+                    upperBound.set(value.getAttempt() - 1);
+                } else if (value.getResult().name().equals("TOO_LOW")) {
+                    lowerBound.set(value.getAttempt() + 1);
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                logger.error("Error: {}", t.getMessage());
+                latch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                logger.info("Game completed!");
+                latch.countDown();
+            }
+        };
+
+        StreamObserver<GuessRequest> requestObserver = asyncStub.makeGuess(responseObserver);
 
         try {
-            logger.info("🎮 Starting Guess Number Game with Binary Search Strategy (1-100)...");
-            logger.info("═══════════════════════════════════════════════════════════════");
+            Scanner scanner = new Scanner(System.in);
 
-            @SuppressWarnings("unchecked")
-            final StreamObserver<GuessRequest>[] requestObserverHolder = new StreamObserver[1];
+            // Initial guess
+            int guess = (lowerBound.get() + upperBound.get()) / 2;
+            logger.info("My first guess: {}", guess);
+            requestObserver.onNext(GuessRequest.newBuilder().setGuess(guess).build());
 
-            var responseObserver = new StreamObserver<GuessResponse>() {
-                @Override
-                public void onNext(GuessResponse response) {
-                    int attempt = response.getAttempt();
-                    Result result = response.getResult();
-                    int guess = lastGuess.get();
-
-                    logger.info("📨 Attempt #{}: Guess={}, Result={}", attempt, guess, result);
-
-                    if (result == Result.CORRECT) {
-                        logger.info("🎉 SUCCESS! Found the number {} in {} attempts!", guess, attempt);
-                        requestObserverHolder[0].onCompleted();
-                        latch.countDown();
-                    } else if (result == Result.TOO_LOW) {
-                        // Adjust binary search: number is higher
-                        low.set(guess + 1);
-                        logger.info("⬆️  Too low! Adjusting range: [{}, {}]", low.get(), high.get());
-                        sendNextGuess();
-                    } else if (result == Result.TOO_HIGH) {
-                        // Adjust binary search: number is lower
-                        high.set(guess - 1);
-                        logger.info("⬇️  Too high! Adjusting range: [{}, {}]", low.get(), high.get());
-                        sendNextGuess();
+            // Continue guessing based on responses
+            while (latch.getCount() > 0) {
+                if (scanner.hasNextLine()) {
+                    String input = scanner.nextLine();
+                    if (input.equalsIgnoreCase("quit")) {
+                        requestObserver.onCompleted();
+                        break;
                     }
-                }
 
-                private void sendNextGuess() {
-                    if (low.get() <= high.get()) {
-                        int nextGuess = low.get() + (high.get() - low.get()) / 2;
-                        lastGuess.set(nextGuess);
-
-                        logger.info("📤 Sending guess: {}", nextGuess);
-
-                        var request = GuessRequest.newBuilder()
-                                .setGuess(nextGuess)
-                                .build();
-
-                        requestObserverHolder[0].onNext(request);
+                    if (lowerBound.get() <= upperBound.get()) {
+                        guess = (lowerBound.get() + upperBound.get()) / 2;
+                        logger.info("My guess: {}", guess);
+                        requestObserver.onNext(GuessRequest.newBuilder().setGuess(guess).build());
                     } else {
-                        logger.warn("No valid range remaining, ending game");
-                        requestObserverHolder[0].onCompleted();
-                        latch.countDown();
+                        logger.info("Invalid range!");
+                        requestObserver.onCompleted();
+                        break;
                     }
                 }
-
-                @Override
-                public void onError(Throwable t) {
-                    logger.error("❌ Error during guessing game", t);
-                    latch.countDown();
-                }
-
-                @Override
-                public void onCompleted() {
-                    logger.info("✅ Server completed the guessing game");
-                    latch.countDown();
-                }
-            };
-
-            var requestObserver = stub.makeGuess(responseObserver);
-            requestObserverHolder[0] = requestObserver;
-
-            // Send first guess
-            int firstGuess = low.get() + (high.get() - low.get()) / 2;
-            lastGuess.set(firstGuess);
-
-            logger.info("📤 Sending initial guess: {}", firstGuess);
-
-            var request = GuessRequest.newBuilder()
-                    .setGuess(firstGuess)
-                    .build();
-
-            requestObserver.onNext(request);
-
-            // Wait for game to complete
-            if (!latch.await(30, TimeUnit.SECONDS)) {
-                logger.warn("⏱️  Game timeout after 30 seconds");
-                requestObserver.onCompleted();
             }
 
-            logger.info("═══════════════════════════════════════════════════════════════");
-            logger.info("🏁 Game finished!");
-
+            latch.await();
+            scanner.close();
         } catch (Exception e) {
-            logger.error("Error during guessing game", e);
-        } finally {
-            try {
-                channel.shutdown();
-                channel.awaitTermination(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            logger.error("Error during game: {}", e.getMessage());
         }
     }
 }

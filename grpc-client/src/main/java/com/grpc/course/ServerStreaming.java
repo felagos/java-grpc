@@ -1,33 +1,41 @@
 package com.grpc.course;
 
-import java.util.Map;
+import com.grpc.course.annotation.GrpcClient;
+import com.grpc.course.BankServiceGrpc;
+import com.grpc.course.WithdrawRequest;
+import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.grpc.course.common.GrpcClient;
-import com.grpc.course.common.PropertiesHelper;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ServerStreaming {
-
     private static final Logger logger = LoggerFactory.getLogger(ServerStreaming.class);
 
-    public static void main(String[] args) {
-        var accountNumber = 1;
-        var amount = 100;
+    @GrpcClient("bank-service")
+    private BankServiceGrpc.BankServiceBlockingStub blockingStub;
 
-        logger.info("Initiating withdraw request for account: {} with amount: {}", accountNumber, amount);
+    public void run() {
+        logger.info("Starting Server Streaming Client...");
+        processWithdraw();
+    }
 
-        Map<String, String> config = PropertiesHelper.loadPropertiesFromFile();
+    private void processWithdraw() {
+        logger.info("=== Server Streaming RPC ===");
+        try {
+            WithdrawRequest request = WithdrawRequest.newBuilder()
+                    .setAccountNumber(1)
+                    .setAmount(10)
+                    .build();
 
-        String host = config.getOrDefault("host", "localhost");
-        int port = Integer.parseInt(config.getOrDefault("grpc.server.port", "6565"));
-
-        var client = new GrpcClient(host, port);
-
-        var response = client.withdraw(accountNumber, amount);
-
-        while(response.hasNext()) {
-            var money = response.next();
-            logger.info("Received money: {}", money);
+            var response = blockingStub.withdraw(request);
+            logger.info("Withdrawing $10 from Account 1:");
+            while (response.hasNext()) {
+                var money = response.next();
+                logger.info("Received: ${}", money.getAmount());
+            }
+        } catch (StatusRuntimeException e) {
+            logger.error("Error: {}", e.getStatus());
         }
     }
 }
